@@ -9,6 +9,7 @@ public class Client {
 
     public static void main(String[] args) {
         if (args.length < 2) {
+            System.out.println(args);
             System.out.println("Usage: java UDPClient <hostname> <request>");
             System.exit(1);
         }
@@ -16,6 +17,8 @@ public class Client {
         String host = args[0];
         String request = args[1];
 
+        System.out.println(host);
+        System.out.println(request);
         client(host, 5555, request);
     }
 
