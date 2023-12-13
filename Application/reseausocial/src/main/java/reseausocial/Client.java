@@ -5,12 +5,12 @@ import java.net.DatagramSocket;
 import java.net.InetAddress;
 
 public class Client {
-    private static final int BUFFSIZE = 1024;
 
     public static void main(String[] args) {
         if (args.length < 2) {
             System.out.println(args);
-            System.out.println("Usage: java UDPClient <hostname> <request>");
+            System.out.println("Usage: java Client <nom_serveur> <nom_utilisateur>");
+            System.out.println("Exemple: java Client localhost SNIVEAU");
             System.exit(1);
         }
 
@@ -19,7 +19,7 @@ public class Client {
 
         System.out.println(host);
         System.out.println(request);
-        client(host, 5555, request);
+        client(host, Constantes.PORT, request);
     }
 
     private static void client(String host, int port, String request) {
@@ -32,7 +32,7 @@ public class Client {
 
             socket.send(requestPacket);
 
-            byte[] responseData = new byte[BUFFSIZE];
+            byte[] responseData = new byte[Constantes.BUFFSIZE];
             DatagramPacket responsePacket = new DatagramPacket(responseData, responseData.length);
 
             socket.receive(responsePacket);

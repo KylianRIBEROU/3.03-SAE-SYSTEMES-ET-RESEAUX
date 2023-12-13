@@ -14,21 +14,23 @@ import java.net.DatagramSocket;
 import java.util.Date;
 
 public class Serveur {
-    private static final int BUFFSIZE = 1024;
 
     public static void main(String[] args) {
         server(5555);
     }
+
+    // Le serveur sera Threadisé pour répondre a plusieurs clients en même temps
 
     private static void server(int port) {
         try {
             DatagramSocket socket = new DatagramSocket(port);
 
             while (true) {
-                byte[] requeteData = new byte[BUFFSIZE];
+                byte[] requeteData = new byte[Constantes.BUFFSIZE];
                 DatagramPacket requetePacket = new DatagramPacket(requeteData, requeteData.length);
 
-                socket.receive(requetePacket);
+                socket.receive(requetePacket); // commande bloquante
+                System.out.println("test");
                 String requete = new String(requetePacket.getData(), 0, requetePacket.getLength());
 
                 String réponse = "Pas de requête valide spécifiée";
