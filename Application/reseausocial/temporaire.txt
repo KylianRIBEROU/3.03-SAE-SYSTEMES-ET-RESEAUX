@@ -1,0 +1,3 @@
+mvn clean install exec:java@run-client -Dexec.args="valeur1 valeur2" -DSkipTests
+
+mvn clean install exec:java@run-server -DSkipTests
