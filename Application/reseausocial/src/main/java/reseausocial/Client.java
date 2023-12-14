@@ -1,8 +1,13 @@
 package reseausocial;
 
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.io.PrintWriter;
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
 import java.net.InetAddress;
+import java.net.Socket;
 
 public class Client {
 
@@ -15,34 +20,71 @@ public class Client {
         }
 
         String host = args[0];
-        String request = args[1];
+        String user = args[1];
 
-        System.out.println(host);
-        System.out.println(request);
-        client(host, Constantes.PORT, request);
+        client(host, Constantes.PORT, user);
     }
 
-    private static void client(String host, int port, String request) {
-        try {
-            DatagramSocket socket = new DatagramSocket();
-            InetAddress address = InetAddress.getByName(host);
+   // https://stackoverflow.com/questions/41409670/is-socket-close-considered-a-clean-way-to-end-the-connection
+   // bonne source de documentation ça 
 
-            byte[] requestData = request.getBytes();
-            DatagramPacket requestPacket = new DatagramPacket(requestData, requestData.length, address, port);
+    private static void client(String host, int port, String user) {
 
-            socket.send(requestPacket);
+         try {
+            // tunnel entre serveur et client
+            Socket socket = new Socket(host, port);
+            // pour lire ce que serveur envoie
+            BufferedReader input = new BufferedReader(new InputStreamReader(socket.getInputStream()));
+            // pour envoyer a serveur
+            PrintWriter output = new PrintWriter(socket.getOutputStream(), true);
 
-            byte[] responseData = new byte[Constantes.BUFFSIZE];
-            DatagramPacket responsePacket = new DatagramPacket(responseData, responseData.length);
+            //TODO: envoyer nom utilisateur au serveur pour qu'il l'enregistre avant de lui proposer de rentrer des commandes
 
-            socket.receive(responsePacket);
-            String response = new String(responsePacket.getData(), 0, responsePacket.getLength());
+            BufferedReader inputClient = new BufferedReader(new InputStreamReader(System.in)); // jsp si faut le mettre dans le while ou pas
+            String commande; 
+            while (true){
+                System.out.print("> ");
+                commande = inputClient.readLine();
+                if (commande.equals("quit")) {
+                    break;
+                }
+                System.out.println(("la requête du client :" + commande));
+                System.out.println("Envoi de la requête au serveur");
+                output.println(commande);
+                String reponseServ = input.readLine();
+                System.out.println("la réponse du serv :");
+                System.out.println(reponseServ);
 
-            System.out.println(response);
+            }
 
+            // si serv ferme la connexion ou qu'on "quit". Exceptions a gérer plus tard 
+            input.close();
+            output.close();
             socket.close();
-        } catch (Exception e) {
+            System.out.println("tout est fermé");
+        } catch (IOException e) {
             e.printStackTrace();
         }
+        // try {
+        //     DatagramSocket socket = new DatagramSocket();
+        //     InetAddress address = InetAddress.getByName(host);
+
+        //     byte[] requestData = request.getBytes();
+        //     DatagramPacket requestPacket = new DatagramPacket(requestData, requestData.length, address, port);
+
+        //     socket.send(requestPacket);
+
+        //     byte[] responseData = new byte[Constantes.BUFFSIZE];
+        //     DatagramPacket responsePacket = new DatagramPacket(responseData, responseData.length);
+
+        //     socket.receive(responsePacket);
+        //     String response = new String(responsePacket.getData(), 0, responsePacket.getLength());
+
+        //     System.out.println(response);
+
+        //     socket.close();
+        // } catch (Exception e) {
+        //     e.printStackTrace();
+        // }
     }
 }

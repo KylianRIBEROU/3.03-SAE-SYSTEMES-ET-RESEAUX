@@ -16,36 +16,28 @@ import java.util.Date;
 public class Serveur {
 
     public static void main(String[] args) {
-        server(5555);
+        Serveur serveur = new Serveur();
+        serveur.lancerServeur(5555);
     }
 
     // Le serveur sera Threadisé pour répondre a plusieurs clients en même temps
 
-    private static void server(int port) {
+    private void lancerServeur(int port) {
         try {
-            DatagramSocket socket = new DatagramSocket(port);
+            ServerSocket serveurSocket = new ServerSocket(port);
 
             while (true) {
-                byte[] requeteData = new byte[Constantes.BUFFSIZE];
-                DatagramPacket requetePacket = new DatagramPacket(requeteData, requeteData.length);
 
-                socket.receive(requetePacket); // commande bloquante
-                System.out.println("test");
-                String requete = new String(requetePacket.getData(), 0, requetePacket.getLength());
 
-                String réponse = "Pas de requête valide spécifiée";
-                if (requete.toLowerCase().equals("date")) {
-                    réponse = new Date().toString();
-                } else if (requete.equals("user")) {
-                    réponse = "Le host du serveur est : " + System.getenv("USER");
-                }
+                Socket clientSocket = serveurSocket.accept(); // commande bloquante ? vérifier si plusieurs  clients peuvent se connecter en même temps
+                System.out.println("test que l'attente d'un client est bloquant"); 
 
-                System.out.println(requete);
-                
-                byte[] réponseData = réponse.getBytes();
-                DatagramPacket réponsePacket = new DatagramPacket(réponseData, réponseData.length, requetePacket.getAddress(), requetePacket.getPort());
+                // TODO: condition selon le nombre de processeurs availables
+                // int nbProcesseurs = Runtime.getRuntime().availableProcessors();
 
-                socket.send(réponsePacket);
+                Session clientSession = new Session(this, serveurSocket, clientSocket);
+                Thread clientThread = new Thread(clientSession);
+                clientThread.start();
             }
 
         } catch (Exception e) {
