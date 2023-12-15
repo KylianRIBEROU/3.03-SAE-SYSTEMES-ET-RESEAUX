@@ -1,19 +1,25 @@
 package reseausocial;
 
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStreamReader;
-import java.io.PrintStream;
 import java.net.ServerSocket;
 import java.net.Socket;
-import java.util.StringTokenizer;
-
-
-import java.net.DatagramPacket;
-import java.net.DatagramSocket;
-import java.util.Date;
+import java.util.List;
+import java.util.ArrayList;
 
 public class Serveur {
+
+    private List<Utilisateur> utilisateurs;
+
+    public Serveur() {
+        this.utilisateurs = new ArrayList<>();
+    }
+
+    public List<Utilisateur> getUtilisateurs() {
+        return utilisateurs;
+    }
+
+    public void ajouteUtilisateur(Utilisateur utilisateur) {
+        this.utilisateurs.add(utilisateur);
+    }
 
     public static void main(String[] args) {
         Serveur serveur = new Serveur();

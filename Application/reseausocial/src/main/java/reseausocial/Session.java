@@ -25,65 +25,42 @@ public class Session implements Runnable {
     public void run() {
         try {
 
+            // penser a init utilisateur ici
+
+
             // le traitement de la requete du client c'est ici je pense
-
-
-
 
             // Initialisation des flux de données
             BufferedReader input = new BufferedReader(new InputStreamReader(clientSocket.getInputStream()));
-            System.out.println("Le input.readline(): ( ce qu'on recoit du client)");
-            System.out.println(input.readLine());
-            System.out.println("b");
-            System.out.println("le client peut pas renvoyer commande tant que serv a pas rép a sa requête");
-            System.out.println("soit mettre systeme de timeout , soit threadiser l'input/output du client");
             PrintWriter output = new PrintWriter(clientSocket.getOutputStream(), true);
 
+            System.out.println("le client peut pas renvoyer commande tant que serv a pas rép a sa requête");
+            System.out.println("soit mettre systeme de timeout , soit threadiser l'input/output du client");
+        
+            String clientMessage;
+            while ((clientMessage = input.readLine()) != null) {
+                switch (clientMessage) {
 
+                    case "help":
+                        System.out.println("frérot stp foncion");
+                        afficherMenuAide(output); // marche pas wtf
+                        break;
 
-            while (true ){
-                System.out.println("c");
-                System.out.println(input.readLine()); // bloquant, le a se print pas psk y'a le readline de au dessus qui a deja pris la premiere entree du client
-                System.out.println("a");
-            
+                    default:
+                        Thread.sleep(500); 
+                        output.println(clientMessage);
+                        output.println("Pas de requête valide spécifiée");
+                }
+            }
 
-            // Logique de communication
-            // String clientMessage;
-            // while ((clientMessage = input.readLine()) != null) {
-            //     // Traitement de la requête du client
-            //     if (clientMessage.equals("quit")) {
-            //         break;
-            //     }
-            //     String response = processClientRequest(clientMessage);
-            //     System.out.println("la réponse du serv :");
-            //     System.out.println(response);
-            //     // Envoi de la réponse au client
-            //     output.println(response);
-            // }
+            input.close();
+            output.close();
+            clientSocket.close();
         }
-
-
-            
-                // String requete = new String(requetePacket.getData(), 0, requetePacket.getLength());
-
-                // String réponse = "Pas de requête valide spécifiée";
-                // if (requete.toLowerCase().equals("date")) {
-                //     réponse = new Date().toString();
-                // } else if (requete.equals("user")) {
-                //     réponse = "Le host du serveur est : " + System.getenv("USER");
-                // }
-
-                // System.out.println(requete);
-                
-                // byte[] réponseData = réponse.getBytes();
-                // DatagramPacket réponsePacket = new DatagramPacket(réponseData, réponseData.length, requetePacket.getAddress(), requetePacket.getPort());
-
-                // socket.send(réponsePacket);
-            // // Fermeture des flux et de la connexion
-            // input.close();
-            // output.close();
-            // clientSocket.close();
-        } catch (IOException e) {
+        catch (IOException e) {
+            e.printStackTrace();
+        }
+        catch (InterruptedException e) {
             e.printStackTrace();
         }
     }
@@ -94,5 +71,13 @@ public class Session implements Runnable {
 
         // Exemple : renvoyer la requête en majuscules
         return request.toUpperCase();
+    }
+
+
+    private void afficherMenuAide(PrintWriter output) {
+        output.println("Liste des commandes disponibles :");
+        output.println("date : affiche la date du serveur");
+        output.println("user : affiche le nom de l'utilisateur du serveur"); // un truc dans le genre a modifier
+        output.println("quit : ferme la connexion");
     }
 }

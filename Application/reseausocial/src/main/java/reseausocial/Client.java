@@ -45,16 +45,21 @@ public class Client {
             while (true){
                 System.out.print("> ");
                 commande = inputClient.readLine();
-                if (commande.equals("quit")) {
+                if (commande.equals("quit")  || commande.equals("exit") || commande.equals("quitter")) {
                     break;
                 }
                 System.out.println(("la requête du client :" + commande));
                 System.out.println("Envoi de la requête au serveur");
-                output.println(commande);
-                String reponseServ = input.readLine();
-                System.out.println("la réponse du serv :");
-                System.out.println(reponseServ);
 
+
+                output.println(commande);
+                String reponseServ;
+                while ((reponseServ = input.readLine()) != null) {
+                System.out.println(reponseServ);
+                if (!input.ready()) {
+                    break;
+                   } 
+                }
             }
 
             // si serv ferme la connexion ou qu'on "quit". Exceptions a gérer plus tard 
