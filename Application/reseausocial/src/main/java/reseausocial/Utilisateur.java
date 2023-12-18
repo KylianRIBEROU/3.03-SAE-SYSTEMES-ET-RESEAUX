@@ -27,7 +27,29 @@ public class Utilisateur {
         this.messages = new ArrayList<>();
     }
 
+    public void ajouteAbonnement(Utilisateur utilisateur){
+        this.abonnements.add(utilisateur);
+    }
 
+    public void supprimeAbonnement(Utilisateur utilisateur){
+        this.abonnements.remove(utilisateur);
+    }
+
+    public void ajouteMessage(Message message){
+        this.messages.add(message);
+    }
+
+    @Override
+    public boolean equals(Object o){
+        if (o == this){
+            return true;
+            }
+        if (!(o instanceof Utilisateur)){
+             return false;
+            }
+        Utilisateur utilisateur = (Utilisateur) o;
+        return utilisateur.getNom().equals(this.nom);
+    }
     /**
      * Méthode qui renvoie une représentation de l'utilisateur en String
      */

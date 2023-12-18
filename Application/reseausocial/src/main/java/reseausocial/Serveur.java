@@ -1,51 +1,49 @@
 package reseausocial;
 
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStreamReader;
-import java.io.PrintStream;
 import java.net.ServerSocket;
 import java.net.Socket;
-import java.util.StringTokenizer;
-
-
-import java.net.DatagramPacket;
-import java.net.DatagramSocket;
-import java.util.Date;
+import java.util.List;
+import java.util.ArrayList;
 
 public class Serveur {
 
+    private List<Utilisateur> utilisateurs;
+
+    public Serveur() {
+        this.utilisateurs = new ArrayList<>();
+    }
+
+    public List<Utilisateur> getUtilisateurs() {
+        return utilisateurs;
+    }
+
+    public void ajouteUtilisateur(Utilisateur utilisateur) {
+        this.utilisateurs.add(utilisateur);
+    }
+
     public static void main(String[] args) {
-        server(5555);
+        Serveur serveur = new Serveur();
+        serveur.lancerServeur(5555);
     }
 
     // Le serveur sera Threadisé pour répondre a plusieurs clients en même temps
 
-    private static void server(int port) {
+    private void lancerServeur(int port) {
         try {
-            DatagramSocket socket = new DatagramSocket(port);
+            ServerSocket serveurSocket = new ServerSocket(port);
 
             while (true) {
-                byte[] requeteData = new byte[Constantes.BUFFSIZE];
-                DatagramPacket requetePacket = new DatagramPacket(requeteData, requeteData.length);
 
-                socket.receive(requetePacket); // commande bloquante
-                System.out.println("test");
-                String requete = new String(requetePacket.getData(), 0, requetePacket.getLength());
 
-                String réponse = "Pas de requête valide spécifiée";
-                if (requete.toLowerCase().equals("date")) {
-                    réponse = new Date().toString();
-                } else if (requete.equals("user")) {
-                    réponse = "Le host du serveur est : " + System.getenv("USER");
-                }
+                Socket clientSocket = serveurSocket.accept(); // commande bloquante ? vérifier si plusieurs  clients peuvent se connecter en même temps
+                System.out.println("test que l'attente d'un client est bloquant"); 
 
-                System.out.println(requete);
-                
-                byte[] réponseData = réponse.getBytes();
-                DatagramPacket réponsePacket = new DatagramPacket(réponseData, réponseData.length, requetePacket.getAddress(), requetePacket.getPort());
+                // TODO: condition selon le nombre de processeurs availables
+                // int nbProcesseurs = Runtime.getRuntime().availableProcessors();
 
-                socket.send(réponsePacket);
+                Session clientSession = new Session(this, serveurSocket, clientSocket);
+                Thread clientThread = new Thread(clientSession);
+                clientThread.start();
             }
 
         } catch (Exception e) {

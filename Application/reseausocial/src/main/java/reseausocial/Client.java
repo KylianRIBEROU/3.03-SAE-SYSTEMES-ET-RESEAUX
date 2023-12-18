@@ -1,8 +1,10 @@
 package reseausocial;
 
-import java.net.DatagramPacket;
-import java.net.DatagramSocket;
-import java.net.InetAddress;
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.io.PrintWriter;
+import java.net.Socket;
 
 public class Client {
 
@@ -15,33 +17,55 @@ public class Client {
         }
 
         String host = args[0];
-        String request = args[1];
+        String user = args[1];
 
-        System.out.println(host);
-        System.out.println(request);
-        client(host, Constantes.PORT, request);
+        client(host, Constantes.PORT, user);
     }
 
-    private static void client(String host, int port, String request) {
-        try {
-            DatagramSocket socket = new DatagramSocket();
-            InetAddress address = InetAddress.getByName(host);
+   // https://stackoverflow.com/questions/41409670/is-socket-close-considered-a-clean-way-to-end-the-connection
+   // bonne source de documentation ça 
 
-            byte[] requestData = request.getBytes();
-            DatagramPacket requestPacket = new DatagramPacket(requestData, requestData.length, address, port);
+    private static void client(String host, int port, String user) {
 
-            socket.send(requestPacket);
+         try {
+            // tunnel entre serveur et client
+            Socket socket = new Socket(host, port);
+            // pour lire ce que serveur envoie
+            BufferedReader input = new BufferedReader(new InputStreamReader(socket.getInputStream()));
+            // pour envoyer a serveur
+            PrintWriter output = new PrintWriter(socket.getOutputStream(), true);
 
-            byte[] responseData = new byte[Constantes.BUFFSIZE];
-            DatagramPacket responsePacket = new DatagramPacket(responseData, responseData.length);
+            output.println(user);
+            System.out.println(input.readLine());
 
-            socket.receive(responsePacket);
-            String response = new String(responsePacket.getData(), 0, responsePacket.getLength());
+            BufferedReader inputClient = new BufferedReader(new InputStreamReader(System.in)); // jsp si faut le mettre dans le while ou pas
+            String commande; 
+            while (true){
+                System.out.print("> ");
+                commande = inputClient.readLine();
+                if (commande.equals("quit")  || commande.equals("exit") || commande.equals("quitter")) {
+                    break;
+                }
+                System.out.println(("la requête du client :" + commande));
+                System.out.println("Envoi de la requête au serveur");
 
-            System.out.println(response);
 
+                output.println(commande);
+                String reponseServ;
+                while ((reponseServ = input.readLine()) != null) {
+                System.out.println(reponseServ);
+                if (!input.ready()) {
+                    break;
+                   } 
+                }
+            }
+
+            // si serv ferme la connexion ou qu'on "quit". Exceptions a gérer plus tard 
+            input.close();
+            output.close();
             socket.close();
-        } catch (Exception e) {
+            System.out.println("tout est fermé");
+        } catch (IOException e) {
             e.printStackTrace();
         }
     }
