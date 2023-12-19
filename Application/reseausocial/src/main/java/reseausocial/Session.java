@@ -9,28 +9,38 @@ import java.net.Socket;
 import java.net.SocketException;
 import java.time.LocalDateTime;
 import java.util.UUID;
+import lombok.Setter;
+import lombok.Getter;
 
+
+@Getter
+@Setter
 public class Session implements Runnable {
 
     private Serveur serveur;
-    private ServerSocket serveurSocket;
     private Socket clientSocket;
     private Utilisateur utilisateur;
 
-    public Session(Serveur serveur, ServerSocket serveurSocket ,Socket clientSocket) {
+    private BufferedReader input;
+    private PrintWriter output;
+
+    public Session(Serveur serveur, Socket clientSocket) {
         this.serveur = serveur;
-        this.serveurSocket = serveurSocket;
         this.clientSocket = clientSocket;
         this.utilisateur = null;
+
+        try {
+            this.input = new BufferedReader(new InputStreamReader(clientSocket.getInputStream()));
+            this.output = new PrintWriter(clientSocket.getOutputStream(), true);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
 
     @Override
     public void run() {
     
         try {
-
-            BufferedReader input = new BufferedReader(new InputStreamReader(clientSocket.getInputStream()));
-            PrintWriter output = new PrintWriter(clientSocket.getOutputStream(), true);
 
              String inputUsername = input.readLine();
             this.utilisateur = checkUtilisateurExiste(inputUsername);
@@ -50,8 +60,11 @@ public class Session implements Runnable {
                 switch (clientMessage.split(" ", 2)[0]) {
                     case "/post":
                         String contenu = clientMessage.split(" ", 2)[1];
-                        Message msgUtil = creerMessage(this.utilisateur, contenu); //TODO
+                        Message msgUtil = creerMessage(this.utilisateur, contenu); 
+                        output.println("Message posté : " + msgUtil.toString());
+                        partagerMessage(this.utilisateur, msgUtil); 
                         break;
+
                     case "/follow":
                         String nomUtilisateur = clientMessage.split(" ", 2)[1];
                         Utilisateur utilisateurSuivi = checkUtilisateurExiste(nomUtilisateur);
@@ -127,7 +140,7 @@ public class Session implements Runnable {
     }
 
     private void partagerMessage(Utilisateur utilisateur, Message message){
-        //TODO
+        this.serveur.redirigerMessage(utilisateur, message);
     }
 
     private void afficherMenuAide(PrintWriter output) {
@@ -135,5 +148,9 @@ public class Session implements Runnable {
         output.println("date : affiche la date du serveur");
         output.println("user : affiche le nom de l'utilisateur du serveur"); // un truc dans le genre a modifier
         output.println("quit : ferme la connexion");
+    }
+
+    public void recevoirMessage(Message message) {
+        output.println(message.toString());
     }
 }

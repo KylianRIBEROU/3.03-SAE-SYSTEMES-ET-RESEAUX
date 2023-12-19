@@ -8,9 +8,11 @@ import java.util.ArrayList;
 public class Serveur {
 
     private List<Utilisateur> utilisateurs;
+    private List<Session> sessions;
 
     public Serveur() {
         this.utilisateurs = new ArrayList<>();
+        this.sessions = new ArrayList<>();
     }
 
     public List<Utilisateur> getUtilisateurs() {
@@ -41,7 +43,8 @@ public class Serveur {
                 // TODO: condition selon le nombre de processeurs availables
                 // int nbProcesseurs = Runtime.getRuntime().availableProcessors();
 
-                Session clientSession = new Session(this, serveurSocket, clientSocket);
+                Session clientSession = new Session(this, clientSocket);
+                this.sessions.add(clientSession);
                 Thread clientThread = new Thread(clientSession);
                 clientThread.start();
             }
@@ -49,6 +52,13 @@ public class Serveur {
         } catch (Exception e) {
             e.printStackTrace();
         }
-        
+    }
+
+    public void redirigerMessage(Utilisateur utilisateur, Message message) {
+        for (Session session : this.sessions) {
+            if (session.getUtilisateur().getAbonnements().contains(utilisateur)) {
+                session.recevoirMessage(message);
+            }
+        }
     }
 }
