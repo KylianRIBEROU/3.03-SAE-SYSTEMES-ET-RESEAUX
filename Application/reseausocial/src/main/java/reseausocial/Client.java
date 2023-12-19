@@ -7,6 +7,12 @@ import java.io.PrintWriter;
 import java.net.Socket;
 
 public class Client {
+    private Socket socket;
+
+    private BufferedReader input;
+    private PrintWriter output;
+
+    private BufferedReader inputClient;
 
     public static void main(String[] args) {
         if (args.length < 2) {
@@ -19,26 +25,46 @@ public class Client {
         String host = args[0];
         String user = args[1];
 
-        client(host, Constantes.PORT, user);
+        Client client = new Client(host, Constantes.PORT);
+
+        client.client(user);
     }
 
    // https://stackoverflow.com/questions/41409670/is-socket-close-considered-a-clean-way-to-end-the-connection
    // bonne source de documentation ça 
 
-    private static void client(String host, int port, String user) {
+   public Client(String host, int port) {
+        try {
+            this.socket = new Socket(host, port);
+            this.input = new BufferedReader(new InputStreamReader(socket.getInputStream()));
+            this.output = new PrintWriter(socket.getOutputStream(), true);
+            this.inputClient = new BufferedReader(new InputStreamReader(System.in));
+
+        }
+        catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+    private void client(String user) {
 
          try {
-            // tunnel entre serveur et client
-            Socket socket = new Socket(host, port);
-            // pour lire ce que serveur envoie
-            BufferedReader input = new BufferedReader(new InputStreamReader(socket.getInputStream()));
-            // pour envoyer a serveur
-            PrintWriter output = new PrintWriter(socket.getOutputStream(), true);
-
+           
             output.println(user);
-            System.out.println(input.readLine());
-
-            BufferedReader inputClient = new BufferedReader(new InputStreamReader(System.in)); // jsp si faut le mettre dans le while ou pas
+            if (input.readLine().equals("notregistered")){ // si l'utilisateur n'existe pas
+                System.out.println(input.readLine());
+                System.out.println(input.readLine());
+                String reponse = inputClient.readLine();
+                if (reponse.equals("y")) {
+                    output.println("y");
+                    System.out.println(input.readLine());
+                } else {
+                    output.println("n");
+                    System.out.println(input.readLine());
+                    System.exit(1);
+                }
+            }
+  
             String commande; 
             while (true){
                 System.out.print("> ");

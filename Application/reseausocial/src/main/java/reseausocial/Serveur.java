@@ -4,6 +4,8 @@ import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.List;
 import java.util.ArrayList;
+import java.io.BufferedReader;
+import java.io.InputStreamReader;
 
 public class Serveur {
 
@@ -36,6 +38,9 @@ public class Serveur {
 
             while (true) {
 
+                // le serveur doit pouvoir effectuer des commandes aussi de son coté
+                
+
 
                 Socket clientSocket = serveurSocket.accept(); // commande bloquante ? vérifier si plusieurs  clients peuvent se connecter en même temps
                 System.out.println("test que l'attente d'un client est bloquant"); 
@@ -49,6 +54,7 @@ public class Serveur {
                 clientThread.start();
             }
 
+
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -59,6 +65,13 @@ public class Serveur {
             if (session.getUtilisateur().getAbonnements().contains(utilisateur)) {
                 session.recevoirMessage(message);
             }
+        }
+    }
+
+    public void likeMessage(String uuidMessage){
+        for (Session session : this.sessions){
+            Utilisateur utilisateur = session.getUtilisateur();
+            if (utilisateur!=null) session.getUtilisateur().likeMessage(uuidMessage);
         }
     }
 }

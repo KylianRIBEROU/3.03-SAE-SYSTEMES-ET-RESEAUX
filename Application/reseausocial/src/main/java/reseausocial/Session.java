@@ -4,12 +4,12 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.PrintWriter;
-import java.net.ServerSocket;
 import java.net.Socket;
 import java.net.SocketException;
 import java.time.LocalDateTime;
 import java.util.UUID;
 import lombok.Setter;
+import reseausocial.Exception.CreationCompteRefuseeException;
 import lombok.Getter;
 
 
@@ -41,13 +41,25 @@ public class Session implements Runnable {
     public void run() {
     
         try {
+            // recevoir nom utilisateur rentre par client
+            String inputUsername = input.readLine();
 
-             String inputUsername = input.readLine();
             this.utilisateur = checkUtilisateurExiste(inputUsername);
             if (this.utilisateur == null) {
-                this.utilisateur = creerUtilisateur(inputUsername);
+                output.println("notregistered");
+                output.println("L'utilisateur '" + inputUsername + "' n'existe pas");
+                output.println("Voulez vous créér un compte avec ce nom  ? (y/n)");
+                String reponse = input.readLine();
+                if (reponse.equals("y") || reponse.equals("Y") || reponse.equals("yes") || reponse.equals("Yes")) {
+                    this.utilisateur = creerUtilisateur(inputUsername);
+                } else {
+                    output.println("Veuillez vous connecter avec un autre nom d'utilisateur");
+                    throw new CreationCompteRefuseeException();
+                }
             }
+            else {
             System.out.println("Utilisateur " + this.utilisateur.getNom() + " connecté");
+            }
             output.println("Bienvenue " + this.utilisateur.getNom() + " !");
 
             // le traitement de la requete du client c'est ici je pense
@@ -65,6 +77,15 @@ public class Session implements Runnable {
                         partagerMessage(this.utilisateur, msgUtil); 
                         break;
 
+                    case "/like":
+                        String uuid = clientMessage.split(" ", 2)[1];
+                        serveur.likeMessage(uuid);
+                        break;
+
+                    case "/delete":
+                        String uuidDelete = clientMessage.split(" ", 2)[1];
+                        this.utilisateur.supprimeMessage(uuidDelete);
+                        break;
                     case "/follow":
                         String nomUtilisateur = clientMessage.split(" ", 2)[1];
                         Utilisateur utilisateurSuivi = checkUtilisateurExiste(nomUtilisateur);
@@ -80,7 +101,7 @@ public class Session implements Runnable {
                         String nomUtilisateurUnfollow = clientMessage.split(" ", 2)[1];
                         Utilisateur utilisateurUnfollow = checkUtilisateurExiste(nomUtilisateurUnfollow);
                         if (utilisateurUnfollow == null) {
-                            output.println("L'utilisateur a unfollow '" + nomUtilisateurUnfollow + "' n'existe pas");
+                            output.println("L'utilisateur à unfollow '" + nomUtilisateurUnfollow + "' n'existe pas");
                         } else {
                             this.utilisateur.supprimeAbonnement(utilisateurUnfollow);
                             output.println("Vous ne suivez plus " + nomUtilisateurUnfollow);
@@ -110,6 +131,8 @@ public class Session implements Runnable {
         catch (InterruptedException e) {
             e.printStackTrace();
         }
+        catch (CreationCompteRefuseeException e) {
+         }
     }
 
     private Utilisateur checkUtilisateurExiste(String nomUtilisateur) {
@@ -135,7 +158,7 @@ public class Session implements Runnable {
             .date(LocalDateTime.now())
             .nbLikes(0)
             .build();
-        utilisateur.ajouteMessage(message); //TODO
+        utilisateur.ajouteMessage(message); //TODO cr"r"r 
         return message;
     }
 
