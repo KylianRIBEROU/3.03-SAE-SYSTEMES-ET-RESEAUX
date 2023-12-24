@@ -50,21 +50,8 @@ public class Client {
 
          try {
            
-            output.println(user);
-            if (input.readLine().equals("notregistered")){ // si l'utilisateur n'existe pas
-                System.out.println(input.readLine());
-                System.out.println(input.readLine());
-                String reponse = inputClient.readLine();
-                if (reponse.equals("y")) {
-                    output.println("y");
-                    System.out.println(input.readLine());
-                } else {
-                    output.println("n");
-                    System.out.println(input.readLine());
-                    System.exit(1);
-                }
-            }
-  
+           requeteConnexion(user);
+
             String commande; 
             while (true){
                 System.out.print("> ");
@@ -72,8 +59,8 @@ public class Client {
                 if (commande.equals("quit")  || commande.equals("exit") || commande.equals("quitter")) {
                     break;
                 }
-                System.out.println(("la requête du client :" + commande));
-                System.out.println("Envoi de la requête au serveur");
+                System.out.println(("la requête du client : " + commande));
+                System.out.println("Envoi de la requête au serveur...");
 
 
                 output.println(commande);
@@ -94,5 +81,45 @@ public class Client {
         } catch (IOException e) {
             e.printStackTrace();
         }
+    }
+
+    private void requeteConnexion(String user) throws IOException {
+         // Envoi du nom d'utilisateur au serveur
+            output.println(user);
+
+            // Réception de la réponse du serveur
+            String serverResponse = input.readLine();
+
+            // Si le serveur propose la création d'un compte
+            while (serverResponse.contains("notregistered")) {
+                System.out.println(input.readLine());
+                System.out.println(input.readLine());
+                System.out.print("> ");
+                String reponse = inputClient.readLine();
+
+                output.println(reponse);
+
+                // Si le client souhaite créer un compte avec ce nom
+                if (!reponse.equalsIgnoreCase("y") && !reponse.equalsIgnoreCase("yes")) {
+                    
+                    System.out.println(input.readLine());
+                    System.out.print("> ");
+                    user = inputClient.readLine();
+                    output.println(user);
+                }
+                else if (reponse.equalsIgnoreCase("y") || reponse.equalsIgnoreCase("yes")){
+                    serverResponse = input.readLine();
+                    break;
+                }
+                else {
+                    System.out.println("Choix invalide");
+                    System.exit(1);
+                }
+
+                // Réception de la réponse du serveur
+                serverResponse = input.readLine();
+            }
+
+            System.out.println(serverResponse);
     }
 }

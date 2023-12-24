@@ -43,7 +43,6 @@ public class Serveur {
 
 
                 Socket clientSocket = serveurSocket.accept(); // commande bloquante ? vérifier si plusieurs  clients peuvent se connecter en même temps
-                System.out.println("test que l'attente d'un client est bloquant"); 
 
                 // TODO: condition selon le nombre de processeurs availables
                 // int nbProcesseurs = Runtime.getRuntime().availableProcessors();

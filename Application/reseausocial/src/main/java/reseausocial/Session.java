@@ -9,7 +9,6 @@ import java.net.SocketException;
 import java.time.LocalDateTime;
 import java.util.UUID;
 import lombok.Setter;
-import reseausocial.Exception.CreationCompteRefuseeException;
 import lombok.Getter;
 
 
@@ -41,29 +40,7 @@ public class Session implements Runnable {
     public void run() {
     
         try {
-            // recevoir nom utilisateur rentre par client
-            String inputUsername = input.readLine();
-
-            this.utilisateur = checkUtilisateurExiste(inputUsername);
-            if (this.utilisateur == null) {
-                output.println("notregistered");
-                output.println("L'utilisateur '" + inputUsername + "' n'existe pas");
-                output.println("Voulez vous créér un compte avec ce nom  ? (y/n)");
-                String reponse = input.readLine();
-                if (reponse.equals("y") || reponse.equals("Y") || reponse.equals("yes") || reponse.equals("Yes")) {
-                    this.utilisateur = creerUtilisateur(inputUsername);
-                } else {
-                    output.println("Veuillez vous connecter avec un autre nom d'utilisateur");
-                    throw new CreationCompteRefuseeException();
-                }
-            }
-            else {
-            System.out.println("Utilisateur " + this.utilisateur.getNom() + " connecté");
-            }
-            output.println("Bienvenue " + this.utilisateur.getNom() + " !");
-
-            // le traitement de la requete du client c'est ici je pense
-
+            traiterRequeteConnexion();
         
             String clientMessage;
             while ((clientMessage = input.readLine()) != null) {
@@ -117,7 +94,7 @@ public class Session implements Runnable {
                         output.println("Pas de requête valide spécifiée");
                 }
             }
-
+            System.out.println(this.utilisateur.getNom() + " s'est déconnecté");
             input.close();
             output.close();
             clientSocket.close();
@@ -131,8 +108,6 @@ public class Session implements Runnable {
         catch (InterruptedException e) {
             e.printStackTrace();
         }
-        catch (CreationCompteRefuseeException e) {
-         }
     }
 
     private Utilisateur checkUtilisateurExiste(String nomUtilisateur) {
@@ -175,5 +150,28 @@ public class Session implements Runnable {
 
     public void recevoirMessage(Message message) {
         output.println(message.toString());
+    }
+
+    private void traiterRequeteConnexion() throws IOException{
+         // recevoir nom utilisateur rentre par client
+            String inputUsername = input.readLine();
+            this.utilisateur = checkUtilisateurExiste(inputUsername);
+
+            while (this.utilisateur == null) {
+                output.println("notregistered");
+                output.println("L'utilisateur '" + inputUsername + "' n'existe pas");
+                output.println("Voulez-vous créer un compte avec ce nom ? (y/n)");
+                String reponse = input.readLine();
+                if (reponse.equalsIgnoreCase("y") || reponse.equalsIgnoreCase("yes")) {
+                    this.utilisateur = creerUtilisateur(inputUsername);
+                } else {
+                    output.println("Veuillez entrer un autre nom d'utilisateur : ");
+                    inputUsername = input.readLine();
+                    this.utilisateur = checkUtilisateurExiste(inputUsername);
+                }
+            }
+            // le traitement de la requete du client c'est ici je pense
+            System.out.println(this.utilisateur.getNom() + " s'est connecté" );
+            output.println("Bienvenue " + this.utilisateur.getNom() + " !");
     }
 }

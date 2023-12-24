@@ -1,3 +1,4 @@
+reseausocial\Exception\CreationCompteRefuseeException.class
 reseausocial\Constantes.class
 reseausocial\Message.class
 reseausocial\Utilisateur$UtilisateurBuilder.class
