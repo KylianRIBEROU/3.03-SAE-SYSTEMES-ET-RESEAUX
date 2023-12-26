@@ -1,6 +1,8 @@
+reseausocial\ClientEnvoiHandler.class
 reseausocial\Exception\CreationCompteRefuseeException.class
 reseausocial\Constantes.class
 reseausocial\Message.class
+reseausocial\ClientReceptionHandler.class
 reseausocial\Utilisateur$UtilisateurBuilder.class
 reseausocial\Client.class
 reseausocial\Serveur.class

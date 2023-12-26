@@ -89,8 +89,7 @@ public class Session implements Runnable {
                         break;
 
                     default:
-                        Thread.sleep(500); 
-                        output.println(clientMessage);
+                        Thread.sleep(100); // au cas ou on sait jamais
                         output.println("Pas de requête valide spécifiée");
                 }
             }
