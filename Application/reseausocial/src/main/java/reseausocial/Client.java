@@ -9,7 +9,6 @@ import java.net.Socket;
 import lombok.Getter;
 import lombok.Setter;
 
-import java.util.concurrent.TimeUnit;
 
 @Getter
 @Setter
@@ -56,8 +55,6 @@ public class Client {
     private void client(String user) {
 
          try {
-
-            //TODO: envoi et réception messages sont threadisés mais ils se coordonnent pas donc des fois l'input ">" se retrouve devant le message du serveur
            
             requeteConnexion(user);
             
@@ -67,18 +64,6 @@ public class Client {
 
             ClientEnvoiHandler envoiMsgServHandler = new ClientEnvoiHandler(this);
             envoiMsgServHandler.start(); // envoi message serveur threadisé
-            // String commande; 
-            // while (true){
-            //     System.out.print("> ");
-            //     commande = inputClient.readLine();
-            //     if (commande.equals("quit")  || commande.equals("exit") || commande.equals("quitter")) {
-            //         break;
-            //     }
-            //     System.out.println(("la requête du client : " + commande));
-            //     System.out.println("Envoi de la requête au serveur...");
-            //     output.println(commande);
-            // }
-
             
             receptionMsgServHandler.join();
             envoiMsgServHandler.join();
@@ -130,14 +115,5 @@ public class Client {
             output.close();
             socket.close();
             System.out.println("tout est fermé");
-    }
-
-    /**
-     * Met un petit temps d'attente avant de pouvoir à nouveau envoyer des commandes
-     * pour que les messages reçus du serveur aient le temps de s'afficher correctement
-     * @throws InterruptedException
-     */
-    public void attenteRecevoirMessages() throws InterruptedException {
-        TimeUnit.MILLISECONDS.sleep(600);
     }
 }
