@@ -7,6 +7,7 @@ import java.io.PrintWriter;
 import java.net.Socket;
 import java.net.SocketException;
 import java.time.LocalDateTime;
+import java.util.List;
 import java.util.UUID;
 import lombok.Setter;
 import lombok.Getter;
@@ -53,16 +54,65 @@ public class Session implements Runnable {
                         output.println("Message posté : " + msgUtil.toString());
                         partagerMessage(this.utilisateur, msgUtil); 
                         break;
+                    
+                    case "/show-my-posts":
+                        output.println("Liste de vos messages postés:");
+                        List<Message> messages = this.utilisateur.getMessages();
+                        if (messages.isEmpty()) {
+                            output.println("Vous n'avez posté aucun message");
+                        }
+                        for (Message message : messages) {
+                            output.println(message.toString());
+                        }
+                        break;
+
+                    case "/show-all-posts":
+                        String nomUtil = clientMessage.split(" ", 2)[1];
+                        Utilisateur utilisateur = checkUtilisateurExiste(nomUtil);
+                        if (utilisateur == null) {
+                            output.println("L'utilisateur '" + nomUtil + "' n'existe pas");
+                        } else {
+                            output.println("Liste des messages de " + nomUtil + " :");
+                            List<Message> messagesUtilisateur = utilisateur.getMessages();
+                            if (messagesUtilisateur.isEmpty()) {
+                                output.println("Cet utilisateur n'a posté aucun message");
+                            }
+                            for (Message message : messagesUtilisateur) {
+                                output.println(message.toString());
+                            }
+                        }
+                        break;
+
+                    case "/show":
+                        String uuidMessage = clientMessage.split(" ", 2)[1];
+                        Message message = serveur.getMessage(uuidMessage);
+                        if (message == null) {
+                            output.println("Aucun message avec l'id '" + uuidMessage + "' existe sur le serveur");
+                        } else {
+                            output.println(message.toString());
+                        }
+                        break;
 
                     case "/like":
                         String uuid = clientMessage.split(" ", 2)[1];
-                        serveur.likeMessage(uuid);
+                        Message msg = serveur.likeMessage(uuid);
+                        if (msg == null) {
+                            output.println("Aucun message avec l'id '" + uuid + "' n'existe sur le serveur");
+                        } else {
+                            output.println("Message liké avec succès ! ( id : " + uuid + " )");
+                        }
                         break;
 
                     case "/delete":
                         String uuidDelete = clientMessage.split(" ", 2)[1];
-                        this.utilisateur.supprimeMessage(uuidDelete);
+                        if (this.serveur.getMessage(uuidDelete) == null) {
+                            output.println("Vous n'avez posté aucun message avec cet ID.");
+                        } else {
+                            this.utilisateur.supprimeMessage(uuidDelete);
+                            output.println("Message supprimé avec succès ! ( id : " + uuidDelete + " )");
+                        }
                         break;
+
                     case "/follow":
                         String nomUtilisateur = clientMessage.split(" ", 2)[1];
                         Utilisateur utilisateurSuivi = checkUtilisateurExiste(nomUtilisateur);
@@ -132,7 +182,7 @@ public class Session implements Runnable {
             .date(LocalDateTime.now())
             .nbLikes(0)
             .build();
-        utilisateur.ajouteMessage(message); //TODO cr"r"r 
+        utilisateur.ajouteMessage(message);
         return message;
     }
 
@@ -148,7 +198,10 @@ public class Session implements Runnable {
     }
 
     public void recevoirMessage(Message message) {
+        output.println("-------------------------------------");
+        output.println("Message posté par une personne que vous suivez");
         output.println(message.toString());
+        output.println("-------------------------------------");
     }
 
     private void traiterRequeteConnexion() throws IOException{

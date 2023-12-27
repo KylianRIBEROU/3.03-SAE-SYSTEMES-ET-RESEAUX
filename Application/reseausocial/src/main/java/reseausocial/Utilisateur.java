@@ -52,13 +52,23 @@ public class Utilisateur {
         }
     }
 
-    public void likeMessage(String uuid){
+    public boolean likeMessage(String uuid){
         for (Message message : this.messages){
             if (message.getUuid().equals(uuid)){
                 message.likeMessage();
-                break;
+                return true;
             }
         }
+        return false;
+    }
+
+    public Message getMessage(String uuid){
+        for (Message message : this.messages){
+            if (message.getUuid().equals(uuid)){
+                return message;
+            }
+        }
+        return null;
     }
 
     @Override

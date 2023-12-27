@@ -65,8 +65,13 @@ public class Client {
             ClientEnvoiHandler envoiMsgServHandler = new ClientEnvoiHandler(this);
             envoiMsgServHandler.start(); // envoi message serveur threadisé
             
+            // ici les deux threads sont lancés et là c'est bloquant en attendant que les 2 soient finis.
+            // cependant si le thread du serveur est shutdown ca signifie surement que le serveur est down aussi
+            // donc je pense qu'il n'y a pas trop d'intêret a laisser le client connecté
+            // donc ptet trouver un moyen que si le thread de réception se ferme, celui de l'envoi se ferme aussi
             receptionMsgServHandler.join();
             envoiMsgServHandler.join();
+            System.out.println("On essaye tout");
             fermetureClient();
             
         } catch (IOException | InterruptedException e) {

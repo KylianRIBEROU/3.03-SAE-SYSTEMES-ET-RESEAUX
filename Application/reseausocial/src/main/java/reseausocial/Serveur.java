@@ -66,16 +66,29 @@ public class Serveur {
         }
     }
 
-    public void likeMessage(String uuidMessage){
-        for (Session session : this.sessions){
-            Utilisateur utilisateur = session.getUtilisateur();
-            if (utilisateur!=null) session.getUtilisateur().likeMessage(uuidMessage);
+    public Message likeMessage(String uuidMessage){
+        Message message = this.getMessage(uuidMessage);
+        if (message!=null){
+            message.likeMessage();
         }
+        return message;
     }
 
     private void displayUpTime(LocalDateTime dateInitServ){
         LocalDateTime dateFinServ = LocalDateTime.now();
         System.out.println("Serveur fermé à : "+dateFinServ.toString());
         System.out.println("Uptime : "+dateInitServ.until(dateFinServ, java.time.temporal.ChronoUnit.MINUTES));
+    }
+
+
+    public Message getMessage(String uuidMessage) {
+        for (Session session : this.sessions){
+            Utilisateur utilisateur = session.getUtilisateur();
+            if (utilisateur!=null){
+                Message message = session.getUtilisateur().getMessage(uuidMessage);
+                if (message!=null) return message;
+            }
+        }
+        return null;
     }
 }
