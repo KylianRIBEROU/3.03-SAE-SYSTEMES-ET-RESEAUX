@@ -49,6 +49,8 @@ public class Session implements Runnable {
                 // [0] pour 1ere partie, [1 pour le reste]
                 switch (clientMessage.split(" ", 2)[0]) {
                     case "/post":
+                    //TODO: le client ne peut pas poster un message avec un contenu vide ( genre "" )
+                        if (warningContenuManquant(clientMessage)) break;
                         String contenu = clientMessage.split(" ", 2)[1];
                         Message msgUtil = creerMessage(this.utilisateur, contenu); 
                         output.println("Message posté : " + msgUtil.toString());
@@ -67,6 +69,7 @@ public class Session implements Runnable {
                         break;
 
                     case "/show-all-posts":
+                        if (warningContenuManquant(clientMessage)) break;
                         String nomUtil = clientMessage.split(" ", 2)[1];
                         Utilisateur utilisateur = checkUtilisateurExiste(nomUtil);
                         if (utilisateur == null) {
@@ -84,6 +87,7 @@ public class Session implements Runnable {
                         break;
 
                     case "/show":
+                        if (warningContenuManquant(clientMessage)) break;
                         String uuidMessage = clientMessage.split(" ", 2)[1];
                         Message message = serveur.getMessage(uuidMessage);
                         if (message == null) {
@@ -94,6 +98,7 @@ public class Session implements Runnable {
                         break;
 
                     case "/like":
+                        if (warningContenuManquant(clientMessage)) break;
                         String uuid = clientMessage.split(" ", 2)[1];
                         Message msg = serveur.likeMessage(uuid);
                         if (msg == null) {
@@ -104,6 +109,7 @@ public class Session implements Runnable {
                         break;
 
                     case "/delete":
+                        if (warningContenuManquant(clientMessage)) break;
                         String uuidDelete = clientMessage.split(" ", 2)[1];
                         if (this.serveur.getMessage(uuidDelete) == null) {
                             output.println("Vous n'avez posté aucun message avec cet ID.");
@@ -114,6 +120,7 @@ public class Session implements Runnable {
                         break;
 
                     case "/follow":
+                        if (warningContenuManquant(clientMessage)) break;
                         String nomUtilisateur = clientMessage.split(" ", 2)[1];
                         Utilisateur utilisateurSuivi = checkUtilisateurExiste(nomUtilisateur);
                         if (utilisateurSuivi == null) {
@@ -125,6 +132,7 @@ public class Session implements Runnable {
                         break;
                     
                     case "/unfollow":
+                        if (warningContenuManquant(clientMessage)) break;
                         String nomUtilisateurUnfollow = clientMessage.split(" ", 2)[1];
                         Utilisateur utilisateurUnfollow = checkUtilisateurExiste(nomUtilisateurUnfollow);
                         if (utilisateurUnfollow == null) {
@@ -134,6 +142,7 @@ public class Session implements Runnable {
                             output.println("Vous ne suivez plus " + nomUtilisateurUnfollow);
                         }
                         break;
+
                     case "/help":
                         afficherMenuAide(output);
                         break;
@@ -190,11 +199,23 @@ public class Session implements Runnable {
         this.serveur.redirigerMessage(utilisateur, message);
     }
 
+    /**
+     * Méthode qui affiche la liste des commandes disponibles TODO: ajouter les nouvelles commandes a chaque fois
+     * @param output
+     */
     private void afficherMenuAide(PrintWriter output) {
+        output.println("----------------------------------------------");
         output.println("Liste des commandes disponibles :");
-        output.println("date : affiche la date du serveur");
-        output.println("user : affiche le nom de l'utilisateur du serveur"); // un truc dans le genre a modifier
-        output.println("quit : ferme la connexion");
+        output.println("/post <contenu> : poster un message");
+        output.println("/show-my-posts : afficher la liste de vos messages postés");
+        output.println("/show-all-posts <nom_utilisateur> : afficher la liste des messages postés par un utilisateur");
+        output.println("/show <uuid> : afficher un message");
+        output.println("/like <uuid> : liker un message");
+        output.println("/delete <uuid> : supprimer un de vos messages");
+        output.println("/follow <nom_utilisateur> : suivre un utilisateur");
+        output.println("/unfollow <nom_utilisateur> : ne plus suivre un utilisateur");
+        output.println("/help : afficher la liste des commandes disponibles");
+        output.println("----------------------------------------------");
     }
 
     public void recevoirMessage(Message message) {
@@ -225,5 +246,13 @@ public class Session implements Runnable {
             // le traitement de la requete du client c'est ici je pense
             System.out.println(this.utilisateur.getNom() + " s'est connecté" );
             output.println("Bienvenue " + this.utilisateur.getNom() + " !");
+    }
+
+    private boolean warningContenuManquant(String requete){
+        if (requete.split(" ", 2).length < 2){
+            output.println("Il manque un contenu à la requête. Si vous avez besoin de précision sur comment la structurer, tapez /help");
+            return true;
+        }   
+        return false;
     }
 }
