@@ -5,6 +5,8 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.PrintWriter;
 import java.net.Socket;
+import java.net.SocketException;
+import java.net.UnknownHostException;
 
 import lombok.Getter;
 import lombok.Setter;
@@ -47,9 +49,11 @@ public class Client {
             this.inputClient = new BufferedReader(new InputStreamReader(System.in));
 
         }
-        catch (IOException e) {
-            e.printStackTrace();
+        catch (IOException  e) {
+            System.out.println("Le serveur est hors ligne ou n'existe pas");
+            System.exit(1);
         }
+
     }
 
     private void client(String user) {
@@ -64,11 +68,16 @@ public class Client {
 
             ClientEnvoiHandler envoiMsgServHandler = new ClientEnvoiHandler(this);
             envoiMsgServHandler.start(); // envoi message serveur threadisé
+
+//             //TODO:  apres s'etre connecté ou créé compte Il voit ensuite la liste des différents messages postés par les utilisateurs
+// auxquels il est abonné, dans l’ordre chronologique (une limite du nombre de messages affichés
+// devra être implantée).
             
             // ici les deux threads sont lancés et là c'est bloquant en attendant que les 2 soient finis.
             // cependant si le thread du serveur est shutdown ca signifie surement que le serveur est down aussi
             // donc je pense qu'il n'y a pas trop d'intêret a laisser le client connecté
             // donc ptet trouver un moyen que si le thread de réception se ferme, celui de l'envoi se ferme aussi
+            //TODO: si probleme de reception message du serveur, fermer client
             receptionMsgServHandler.join();
             envoiMsgServHandler.join();
             System.out.println("On essaye tout");

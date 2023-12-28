@@ -49,8 +49,7 @@ public class Session implements Runnable {
                 // [0] pour 1ere partie, [1 pour le reste]
                 switch (clientMessage.split(" ", 2)[0]) {
                     case "/post":
-                    //TODO: le client ne peut pas poster un message avec un contenu vide ( genre "" )
-                        if (warningContenuManquant(clientMessage)) break;
+                        if (warningContenuManquant(clientMessage, output)) break;
                         String contenu = clientMessage.split(" ", 2)[1];
                         Message msgUtil = creerMessage(this.utilisateur, contenu); 
                         output.println("Message posté : " + msgUtil.toString());
@@ -69,7 +68,7 @@ public class Session implements Runnable {
                         break;
 
                     case "/show-all-posts":
-                        if (warningContenuManquant(clientMessage)) break;
+                        if (warningContenuManquant(clientMessage, output)) break;
                         String nomUtil = clientMessage.split(" ", 2)[1];
                         Utilisateur utilisateur = checkUtilisateurExiste(nomUtil);
                         if (utilisateur == null) {
@@ -87,7 +86,7 @@ public class Session implements Runnable {
                         break;
 
                     case "/show":
-                        if (warningContenuManquant(clientMessage)) break;
+                        if (warningContenuManquant(clientMessage, output)) break;
                         String uuidMessage = clientMessage.split(" ", 2)[1];
                         Message message = serveur.getMessage(uuidMessage);
                         if (message == null) {
@@ -98,7 +97,7 @@ public class Session implements Runnable {
                         break;
 
                     case "/like":
-                        if (warningContenuManquant(clientMessage)) break;
+                        if (warningContenuManquant(clientMessage, output)) break;
                         String uuid = clientMessage.split(" ", 2)[1];
                         Message msg = serveur.likeMessage(uuid);
                         if (msg == null) {
@@ -109,18 +108,17 @@ public class Session implements Runnable {
                         break;
 
                     case "/delete":
-                        if (warningContenuManquant(clientMessage)) break;
+                        if (warningContenuManquant(clientMessage, output)) break;
                         String uuidDelete = clientMessage.split(" ", 2)[1];
-                        if (this.serveur.getMessage(uuidDelete) == null) {
-                            output.println("Vous n'avez posté aucun message avec cet ID.");
-                        } else {
-                            this.utilisateur.supprimeMessage(uuidDelete);
+                        if (this.utilisateur.supprimeMessage(uuidDelete)) {
                             output.println("Message supprimé avec succès ! ( id : " + uuidDelete + " )");
+                        } else {
+                            output.println("Vous n'avez posté aucun message avec cet ID.");
                         }
                         break;
 
                     case "/follow":
-                        if (warningContenuManquant(clientMessage)) break;
+                        if (warningContenuManquant(clientMessage, output)) break;
                         String nomUtilisateur = clientMessage.split(" ", 2)[1];
                         Utilisateur utilisateurSuivi = checkUtilisateurExiste(nomUtilisateur);
                         if (utilisateurSuivi == null) {
@@ -132,7 +130,7 @@ public class Session implements Runnable {
                         break;
                     
                     case "/unfollow":
-                        if (warningContenuManquant(clientMessage)) break;
+                        if (warningContenuManquant(clientMessage, output)) break;
                         String nomUtilisateurUnfollow = clientMessage.split(" ", 2)[1];
                         Utilisateur utilisateurUnfollow = checkUtilisateurExiste(nomUtilisateurUnfollow);
                         if (utilisateurUnfollow == null) {
@@ -144,12 +142,16 @@ public class Session implements Runnable {
                         break;
 
                     case "/help":
-                        afficherMenuAide(output);
+                        afficherMenuAideClient(output);
                         break;
 
                     default:
                         Thread.sleep(100); // au cas ou on sait jamais
                         output.println("Pas de requête valide spécifiée");
+                }
+                if (this.utilisateur == null){
+                    output.println("Utilisateur supprimé par un administrateur. Déconnexion");
+                    break;
                 }
             }
             System.out.println(this.utilisateur.getNom() + " s'est déconnecté");
@@ -203,9 +205,9 @@ public class Session implements Runnable {
      * Méthode qui affiche la liste des commandes disponibles TODO: ajouter les nouvelles commandes a chaque fois
      * @param output
      */
-    private void afficherMenuAide(PrintWriter output) {
+    private void afficherMenuAideClient(PrintWriter output) {
         output.println("----------------------------------------------");
-        output.println("Liste des commandes disponibles :");
+        output.println("Liste des commandes disponibles pour le client:");
         output.println("/post <contenu> : poster un message");
         output.println("/show-my-posts : afficher la liste de vos messages postés");
         output.println("/show-all-posts <nom_utilisateur> : afficher la liste des messages postés par un utilisateur");
@@ -244,15 +246,24 @@ public class Session implements Runnable {
                 }
             }
             // le traitement de la requete du client c'est ici je pense
+            this.serveur.ajouteUtilisateur(utilisateur); // pour que le serveur puisse accéder directement aux utilisateurs
             System.out.println(this.utilisateur.getNom() + " s'est connecté" );
             output.println("Bienvenue " + this.utilisateur.getNom() + " !");
     }
 
-    private boolean warningContenuManquant(String requete){
+    public static boolean warningContenuManquant(String requete, PrintWriter output){
         if (requete.split(" ", 2).length < 2){
             output.println("Il manque un contenu à la requête. Si vous avez besoin de précision sur comment la structurer, tapez /help");
             return true;
         }   
+        return false;
+    }
+
+    public static boolean warningContenuManquant(String requete){
+        if (requete.split(" ", 2).length < 2){
+            System.out.println("Il manque un contenu à la requête. Si vous avez besoin de précision sur comment la structurer, tapez /help");
+            return true;
+        }
         return false;
     }
 }

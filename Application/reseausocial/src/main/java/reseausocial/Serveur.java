@@ -5,14 +5,19 @@ import java.net.Socket;
 import java.util.List;
 import java.util.ArrayList;
 import java.time.LocalDateTime;
-public class Serveur {
+import java.io.BufferedReader;
+import java.io.InputStreamReader;
+
+public class Serveur implements CommandesServeur {
 
     private List<Utilisateur> utilisateurs;
     private List<Session> sessions;
+    private BufferedReader inputServeur;
 
     public Serveur() {
         this.utilisateurs = new ArrayList<>();
         this.sessions = new ArrayList<>();
+        this.inputServeur = new BufferedReader(new InputStreamReader(System.in));
     }
 
     public List<Utilisateur> getUtilisateurs() {
@@ -39,9 +44,10 @@ public class Serveur {
             while (true) {
 
                 // le serveur doit pouvoir effectuer des commandes aussi de son coté
+                ServeurRequeteHandler serveurRequeteHandler = new ServeurRequeteHandler(this, this.inputServeur);
+                serveurRequeteHandler.start();
 
-
-                Socket clientSocket = serveurSocket.accept(); // commande bloquante ? vérifier si plusieurs  clients peuvent se connecter en même temps
+                Socket clientSocket = serveurSocket.accept();
 
                 // TODO: condition selon le nombre de processeurs availables
                 // int nbProcesseurs = Runtime.getRuntime().availableProcessors();
@@ -51,6 +57,7 @@ public class Serveur {
                 Thread clientThread = new Thread(clientSession);
                 clientThread.start();
             }
+
 
         } catch (Exception e) {
             displayUpTime(dateInitServ);
@@ -82,13 +89,41 @@ public class Serveur {
 
 
     public Message getMessage(String uuidMessage) {
-        for (Session session : this.sessions){
-            Utilisateur utilisateur = session.getUtilisateur();
-            if (utilisateur!=null){
-                Message message = session.getUtilisateur().getMessage(uuidMessage);
+        for (Utilisateur utilisateur : this.utilisateurs){
+                Message message =utilisateur.getMessage(uuidMessage);
                 if (message!=null) return message;
             }
-        }
         return null;
+    }
+
+    @Override
+    public void deleteMessage(String uuid) {
+       for ( Utilisateur utilisateur : this.utilisateurs){
+                Message message = utilisateur.getMessage(uuid);
+                if (message!=null) {
+                    utilisateur.supprimeMessage(message);
+                    System.out.println("Message supprimé");
+                };
+        }
+    }
+
+    @Override
+    public void deleteUtilisateur(String nomUtilisateur) {
+        for (Utilisateur utilisateur : this.utilisateurs){
+            if (utilisateur.getNom().equals(nomUtilisateur)){
+                    utilisateur.supprimeMessages();
+                    System.out.println("Messages de "+nomUtilisateur+" supprimés");
+                    this.utilisateurs.remove(utilisateur);
+                    System.out.println(nomUtilisateur+" supprimé");
+                    break;
+            }
+        }
+    }
+
+    public void afficheCommandesServeur(){
+        System.out.println("Commandes serveur ( administrateur ) :");
+        System.out.println("/delete <uuid> : supprime le message correspondant à l'uuid");
+        System.out.println("/remove <nomUtilisateur> : supprime l'utilisateur et ses messages");
+        System.out.println("/help : affiche les commandes serveur");
     }
 }

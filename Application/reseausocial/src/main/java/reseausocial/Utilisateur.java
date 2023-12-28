@@ -43,13 +43,18 @@ public class Utilisateur {
         this.messages.remove(message);
     }
 
-    public void supprimeMessage(String uuid){
+    public boolean supprimeMessage(String uuid){
         for (Message message : this.messages){
             if (message.getUuid().equals(uuid)){
                 this.messages.remove(message);
-                break;
+                return true;
             }
         }
+        return false;
+    }
+
+    public void supprimeMessages(){
+        this.messages.clear();
     }
 
     public boolean likeMessage(String uuid){
