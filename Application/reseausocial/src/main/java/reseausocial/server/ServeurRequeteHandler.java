@@ -1,4 +1,4 @@
-package reseausocial;
+package reseausocial.server;
 
 import java.io.BufferedReader;
 
@@ -21,13 +21,19 @@ public class ServeurRequeteHandler extends Thread {
                     switch (requete.split(" ", 2)[0]) {
                         case "/delete":
                             if (Session.warningContenuManquant(requete)) break;
-                            String uuidMessage = requete.split(" ", 1)[1];
+                            System.out.println(requete);
+                            System.out.println(requete.split(" ", 2)[0]);
+                            System.out.println(requete.split(" ", 2)[1]);
+                            String uuidMessage = requete.split(" ", 2)[1];
                             this.serveur.deleteMessage(uuidMessage);
                             break;
                         case "/remove":
                             if (Session.warningContenuManquant(requete)) break;
-                            String nomUtilisateur = requete.split(" ", 1)[1];
+                            String nomUtilisateur = requete.split(" ", 2)[1];
                             this.serveur.deleteUtilisateur(nomUtilisateur);
+                            break;
+                        case "/show-all-users":
+                            this.serveur.afficheUtilisateurs();
                             break;
                         case "/help":
                             this.serveur.afficheCommandesServeur();

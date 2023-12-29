@@ -1,8 +1,12 @@
-package reseausocial;
+package reseausocial.server;
 
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.List;
+
+import reseausocial.models.Message;
+import reseausocial.models.Utilisateur;
+
 import java.util.ArrayList;
 import java.time.LocalDateTime;
 import java.io.BufferedReader;
@@ -33,25 +37,19 @@ public class Serveur implements CommandesServeur {
         serveur.lancerServeur(5555);
     }
 
-    // Le serveur sera Threadisé pour répondre a plusieurs clients en même temps
-
     private void lancerServeur(int port) {
         LocalDateTime dateInitServ = LocalDateTime.now();
         try {
             ServerSocket serveurSocket = new ServerSocket(port);
             System.out.println("Serveur lancé à : "+dateInitServ.toString());
 
+
             while (true) {
 
-                // le serveur doit pouvoir effectuer des commandes aussi de son coté
                 ServeurRequeteHandler serveurRequeteHandler = new ServeurRequeteHandler(this, this.inputServeur);
                 serveurRequeteHandler.start();
 
                 Socket clientSocket = serveurSocket.accept();
-
-                // TODO: condition selon le nombre de processeurs availables
-                // int nbProcesseurs = Runtime.getRuntime().availableProcessors();
-
                 Session clientSession = new Session(this, clientSocket);
                 this.sessions.add(clientSession);
                 Thread clientThread = new Thread(clientSession);
@@ -115,15 +113,34 @@ public class Serveur implements CommandesServeur {
                     System.out.println("Messages de "+nomUtilisateur+" supprimés");
                     this.utilisateurs.remove(utilisateur);
                     System.out.println(nomUtilisateur+" supprimé");
+                    for (Session session : this.sessions){
+                        if (session.getUtilisateur().equals(utilisateur)){
+                            session.setUtilisateur(null);
+                            this.sessions.remove(session);
+                            System.out.println("Session de "+nomUtilisateur+" fermée");
+                            break;
+                        }
+                    }
                     break;
             }
         }
     }
 
+    public void afficheUtilisateurs(){
+        System.out.println("----------------------------------------------");
+        System.out.println("Utilisateurs :");
+        for (Utilisateur utilisateur : this.utilisateurs){
+            utilisateur.afficheUtilisateur();
+        }
+        System.out.println("----------------------------------------------");
+    }
+
     public void afficheCommandesServeur(){
+        System.out.println("----------------------------------------------");
         System.out.println("Commandes serveur ( administrateur ) :");
         System.out.println("/delete <uuid> : supprime le message correspondant à l'uuid");
         System.out.println("/remove <nomUtilisateur> : supprime l'utilisateur et ses messages");
         System.out.println("/help : affiche les commandes serveur");
+        System.out.println("----------------------------------------------");
     }
 }

@@ -1,4 +1,4 @@
-package reseausocial;
+package reseausocial.client;
 
 public class ClientEnvoiHandler extends Thread {
     
@@ -19,9 +19,6 @@ public class ClientEnvoiHandler extends Thread {
                     if (commande.equals("quit")  || commande.equals("exit") || commande.equals("quitter")) {
                         break;
                     }
-                    // TODO: enlever les deux print ci dessous a la fin du projet
-                    // System.out.println(("la requête du client : " + commande));
-                    // System.out.println("Envoi de la requête au serveur..."); 
                     client.getOutput().println(commande); 
                     Thread.sleep(400); // pour éviter flood 
                 }

@@ -1,4 +1,4 @@
-package reseausocial;
+package reseausocial.server;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -10,6 +10,9 @@ import java.time.LocalDateTime;
 import java.util.List;
 import java.util.UUID;
 import lombok.Setter;
+import reseausocial.models.Message;
+import reseausocial.models.Utilisateur;
+import reseausocial.resources.Constantes;
 import lombok.Getter;
 
 
@@ -41,7 +44,7 @@ public class Session implements Runnable {
     public void run() {
     
         try {
-            traiterRequeteConnexion();
+            String username = traiterRequeteConnexion();
         
             String clientMessage;
             while ((clientMessage = input.readLine()) != null) {
@@ -124,6 +127,10 @@ public class Session implements Runnable {
                         if (utilisateurSuivi == null) {
                             output.println("L'utilisateur " + nomUtilisateur + " n'existe pas");
                         } else {
+                            if (this.utilisateur.getAbonnements().contains(utilisateurSuivi)) {
+                                output.println("Vous suivez déjà " + nomUtilisateur);
+                                break;
+                            }
                             this.utilisateur.ajouteAbonnement(utilisateurSuivi);
                             output.println("Vous suivez maintenant " + nomUtilisateur);
                         }
@@ -151,13 +158,12 @@ public class Session implements Runnable {
                 }
                 if (this.utilisateur == null){
                     output.println("Utilisateur supprimé par un administrateur. Déconnexion");
+                    output.println("shutdown");
                     break;
                 }
             }
-            System.out.println(this.utilisateur.getNom() + " s'est déconnecté");
-            input.close();
-            output.close();
-            clientSocket.close();
+            System.out.println(username + " s'est déconnecté");
+            fermerSession();
         }
         catch (SocketException e){
             System.out.println("Session de "+ this.utilisateur.getNom() + " interrompue");
@@ -170,6 +176,11 @@ public class Session implements Runnable {
         }
     }
 
+    /**
+     * Méthode qui vérifie si un utilisateur existe déjà dans la liste des utilisateurs du serveur
+     * @param nomUtilisateur
+     * @return l'utilisateur s'il existe, null sinon
+     */
     private Utilisateur checkUtilisateurExiste(String nomUtilisateur) {
         for (Utilisateur utilisateur : serveur.getUtilisateurs()) {
             if (utilisateur.getNom().equals(nomUtilisateur)) {
@@ -179,12 +190,23 @@ public class Session implements Runnable {
         return null;
     }
 
+    /**
+     *  Méthode qui crée un utilisateur et l'ajoute à la liste des utilisateurs du serveur
+     * @param nomUtilisateur
+     * @return l'utilisateur créé
+     */
     private Utilisateur creerUtilisateur(String nomUtilisateur) {
         Utilisateur utilisateur = new Utilisateur(nomUtilisateur);
         serveur.ajouteUtilisateur(utilisateur);
         return utilisateur;
     }
 
+    /**
+     * Méthode qui crée un message et l'ajoute à la liste des messages de l'utilisateur
+     * @param utilisateur
+     * @param contenu
+     * @return le message créé
+     */
     private Message creerMessage(Utilisateur utilisateur, String contenu){
         Message message = Message.builder()
             .uuid(UUID.randomUUID().toString())
@@ -202,7 +224,7 @@ public class Session implements Runnable {
     }
 
     /**
-     * Méthode qui affiche la liste des commandes disponibles TODO: ajouter les nouvelles commandes a chaque fois
+     * Méthode qui affiche au client la liste des commandes disponibles
      * @param output
      */
     private void afficherMenuAideClient(PrintWriter output) {
@@ -227,10 +249,11 @@ public class Session implements Runnable {
         output.println("-------------------------------------");
     }
 
-    private void traiterRequeteConnexion() throws IOException{
+    private String traiterRequeteConnexion() throws IOException{
          // recevoir nom utilisateur rentre par client
             String inputUsername = input.readLine();
             this.utilisateur = checkUtilisateurExiste(inputUsername);
+            boolean nouveauCompte = false;
 
             while (this.utilisateur == null) {
                 output.println("notregistered");
@@ -239,31 +262,78 @@ public class Session implements Runnable {
                 String reponse = input.readLine();
                 if (reponse.equalsIgnoreCase("y") || reponse.equalsIgnoreCase("yes")) {
                     this.utilisateur = creerUtilisateur(inputUsername);
+                    nouveauCompte = true;
                 } else {
                     output.println("Veuillez entrer un autre nom d'utilisateur : ");
                     inputUsername = input.readLine();
                     this.utilisateur = checkUtilisateurExiste(inputUsername);
                 }
             }
-            // le traitement de la requete du client c'est ici je pense
-            this.serveur.ajouteUtilisateur(utilisateur); // pour que le serveur puisse accéder directement aux utilisateurs
-            System.out.println(this.utilisateur.getNom() + " s'est connecté" );
-            output.println("Bienvenue " + this.utilisateur.getNom() + " !");
+            String username = this.utilisateur.getNom();
+            System.out.println(username + " s'est connecté" );
+            output.println("Bienvenue " + username + " !");
+            if (nouveauCompte) {
+                this.afficherSuggestionsAbonnements();
+            }
+            return username;
     }
 
+    public void afficherSuggestionsAbonnements(){
+        output.println("Vous venez de créer un compte ! Voici une liste d'utilisateurs que vous pourriez suivre :");
+        int cpt = 0;
+        for (Utilisateur utilisateur : serveur.getUtilisateurs()) {
+            if (!utilisateur.equals(this.utilisateur) && !this.utilisateur.getAbonnements().contains(utilisateur)) {
+                output.println("- "+utilisateur.toString());
+            }
+            cpt++;
+            if (cpt >= Constantes.LIMITE_NB_UTILISATEURS_SUGGERES) {
+                break;
+            }
+        }
+    }
+
+    /**
+     * Méthode qui affiche un warning si le contenu de la requete est manquant
+     * @param requete
+     * @param output
+     * @return true si le contenu est manquant, false sinon
+     */
     public static boolean warningContenuManquant(String requete, PrintWriter output){
         if (requete.split(" ", 2).length < 2){
-            output.println("Il manque un contenu à la requête. Si vous avez besoin de précision sur comment la structurer, tapez /help");
+            output.println(Constantes.MESSAGE_ARGUMENT_COMMANDE_MANQUANT);
             return true;
         }   
         return false;
     }
 
+    /**
+     * Méthode qui affiche un warning si le contenu de la requete est manquant
+     * @param requete
+     * @return true si le contenu est manquant, false sinon
+     */
     public static boolean warningContenuManquant(String requete){
         if (requete.split(" ", 2).length < 2){
-            System.out.println("Il manque un contenu à la requête. Si vous avez besoin de précision sur comment la structurer, tapez /help");
+            System.out.println(Constantes.MESSAGE_ARGUMENT_COMMANDE_MANQUANT);
             return true;
         }
         return false;
+    }
+
+    /**
+     * Méthode qui ferme la session en fermant les flux et le socket
+     * @throws IOException
+     */
+    public void fermerSession() throws IOException{
+        this.input.close();
+        this.output.close();
+        this.clientSocket.close();
+    }
+
+    /**
+     * Méthode qui renvoie une représentation de la session en String
+     */
+    @Override
+    public String toString(){
+        return "Session de "+this.utilisateur.getNom();
     }
 }

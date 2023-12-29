@@ -50,7 +50,7 @@
                         <goal>java</goal>
                     </goals>
                     <configuration>
-                        <mainClass>reseausocial.Serveur</mainClass>
+                        <mainClass>reseausocial.server.Serveur</mainClass>
                     </configuration>
                 </execution>
                 <execution>
@@ -60,7 +60,7 @@
                         <goal>java</goal>
                     </goals>
                     <configuration>
-                        <mainClass>reseausocial.Client</mainClass>
+                        <mainClass>reseausocial.client.Client</mainClass>
                         <argument>argdetest</argument>
                         <argument>argdetest2</argument>
                     </configuration>

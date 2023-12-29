@@ -1,4 +1,4 @@
-package reseausocial;
+package reseausocial.models;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -92,7 +92,7 @@ public class Utilisateur {
      */
     @Override
     public String toString(){
-        return "Utilisateur : " + this.nom+", Nb messages envoyés : "+this.messages.size();
+        return this.nom+", Nb messages envoyés : "+this.messages.size();
     }
 
     /**
