@@ -1,8 +1,13 @@
-reseausocial\Constantes.class
 reseausocial\Message.class
+reseausocial\ClientReceptionHandler.class
 reseausocial\Utilisateur$UtilisateurBuilder.class
 reseausocial\Client.class
+reseausocial\Utilisateur.class
+reseausocial\CommandesServeur.class
+reseausocial\ClientEnvoiHandler.class
+reseausocial\Exception\CreationCompteRefuseeException.class
+reseausocial\Constantes.class
+reseausocial\ServeurRequeteHandler.class
 reseausocial\Serveur.class
 reseausocial\Session.class
-reseausocial\Utilisateur.class
 reseausocial\Message$MessageBuilder.class

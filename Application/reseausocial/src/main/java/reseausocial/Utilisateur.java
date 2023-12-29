@@ -39,6 +39,43 @@ public class Utilisateur {
         this.messages.add(message);
     }
 
+    public void supprimeMessage(Message message){
+        this.messages.remove(message);
+    }
+
+    public boolean supprimeMessage(String uuid){
+        for (Message message : this.messages){
+            if (message.getUuid().equals(uuid)){
+                this.messages.remove(message);
+                return true;
+            }
+        }
+        return false;
+    }
+
+    public void supprimeMessages(){
+        this.messages.clear();
+    }
+
+    public boolean likeMessage(String uuid){
+        for (Message message : this.messages){
+            if (message.getUuid().equals(uuid)){
+                message.likeMessage();
+                return true;
+            }
+        }
+        return false;
+    }
+
+    public Message getMessage(String uuid){
+        for (Message message : this.messages){
+            if (message.getUuid().equals(uuid)){
+                return message;
+            }
+        }
+        return null;
+    }
+
     @Override
     public boolean equals(Object o){
         if (o == this){

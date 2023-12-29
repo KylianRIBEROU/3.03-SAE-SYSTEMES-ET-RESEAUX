@@ -33,7 +33,7 @@ public class Message {
         this.nbLikes = 0;
     }
     
-
+ 
     public void likeMessage(){
         this.nbLikes++;
     }
