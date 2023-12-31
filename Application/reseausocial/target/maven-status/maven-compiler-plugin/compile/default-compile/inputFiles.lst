@@ -1,11 +1,13 @@
-C:\Users\kylia\Desktop\3.03-SAE-SYSTEMES-ET-RESEAUX\Application\reseausocial\src\main\java\reseausocial\server\CommandesServeur.java
+C:\Users\kylia\Desktop\3.03-SAE-SYSTEMES-ET-RESEAUX\Application\reseausocial\src\main\java\reseausocial\models\entity\Publication.java
 C:\Users\kylia\Desktop\3.03-SAE-SYSTEMES-ET-RESEAUX\Application\reseausocial\src\main\java\reseausocial\client\ClientEnvoiHandler.java
 C:\Users\kylia\Desktop\3.03-SAE-SYSTEMES-ET-RESEAUX\Application\reseausocial\src\main\java\reseausocial\models\Message.java
-C:\Users\kylia\Desktop\3.03-SAE-SYSTEMES-ET-RESEAUX\Application\reseausocial\src\main\java\reseausocial\server\Session.java
-C:\Users\kylia\Desktop\3.03-SAE-SYSTEMES-ET-RESEAUX\Application\reseausocial\src\main\java\reseausocial\server\ServeurRequeteHandler.java
+C:\Users\kylia\Desktop\3.03-SAE-SYSTEMES-ET-RESEAUX\Application\reseausocial\src\main\java\reseausocial\models\entity\Utilisateur.java
 C:\Users\kylia\Desktop\3.03-SAE-SYSTEMES-ET-RESEAUX\Application\reseausocial\src\main\java\reseausocial\Exception\CreationCompteRefuseeException.java
-C:\Users\kylia\Desktop\3.03-SAE-SYSTEMES-ET-RESEAUX\Application\reseausocial\src\main\java\reseausocial\models\Utilisateur.java
 C:\Users\kylia\Desktop\3.03-SAE-SYSTEMES-ET-RESEAUX\Application\reseausocial\src\main\java\reseausocial\server\Serveur.java
 C:\Users\kylia\Desktop\3.03-SAE-SYSTEMES-ET-RESEAUX\Application\reseausocial\src\main\java\reseausocial\client\ClientReceptionHandler.java
 C:\Users\kylia\Desktop\3.03-SAE-SYSTEMES-ET-RESEAUX\Application\reseausocial\src\main\java\reseausocial\client\Client.java
+C:\Users\kylia\Desktop\3.03-SAE-SYSTEMES-ET-RESEAUX\Application\reseausocial\src\main\java\reseausocial\server\CommandesServeur.java
+C:\Users\kylia\Desktop\3.03-SAE-SYSTEMES-ET-RESEAUX\Application\reseausocial\src\main\java\reseausocial\server\Session.java
+C:\Users\kylia\Desktop\3.03-SAE-SYSTEMES-ET-RESEAUX\Application\reseausocial\src\main\java\reseausocial\server\ServeurRequeteHandler.java
+C:\Users\kylia\Desktop\3.03-SAE-SYSTEMES-ET-RESEAUX\Application\reseausocial\src\main\java\reseausocial\models\Utilisateur.java
 C:\Users\kylia\Desktop\3.03-SAE-SYSTEMES-ET-RESEAUX\Application\reseausocial\src\main\java\reseausocial\resources\Constantes.java

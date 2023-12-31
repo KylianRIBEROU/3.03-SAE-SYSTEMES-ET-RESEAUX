@@ -4,10 +4,14 @@ reseausocial\client\ClientReceptionHandler.class
 reseausocial\server\Session.class
 reseausocial\server\CommandesServeur.class
 reseausocial\resources\Constantes.class
+reseausocial\models\entity\Publication$PublicationBuilder.class
+reseausocial\models\entity\Utilisateur$UtilisateurBuilder.class
 reseausocial\server\Serveur.class
 reseausocial\models\Utilisateur$UtilisateurBuilder.class
 reseausocial\client\Client.class
 reseausocial\Exception\CreationCompteRefuseeException.class
 reseausocial\server\ServeurRequeteHandler.class
 reseausocial\models\Message$MessageBuilder.class
+reseausocial\models\entity\Utilisateur.class
+reseausocial\models\entity\Publication.class
 reseausocial\models\Utilisateur.class
