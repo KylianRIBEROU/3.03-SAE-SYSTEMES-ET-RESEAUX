@@ -4,6 +4,10 @@ import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.List;
 
+import org.springframework.boot.CommandLineRunner;
+import org.springframework.boot.SpringApplication;
+import org.springframework.boot.autoconfigure.SpringBootApplication;
+
 import reseausocial.models.Message;
 import reseausocial.models.Utilisateur;
 
@@ -12,7 +16,8 @@ import java.time.LocalDateTime;
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
 
-public class Serveur implements CommandesServeur {
+@SpringBootApplication
+public class Serveur implements CommandesServeur, CommandLineRunner{
 
     private List<Utilisateur> utilisateurs;
     private List<Session> sessions;
@@ -32,7 +37,17 @@ public class Serveur implements CommandesServeur {
         this.utilisateurs.add(utilisateur);
     }
 
+    // public static void main(String[] args) {
+    //     Serveur serveur = new Serveur();
+    //     serveur.lancerServeur(5555);
+    // }
+
     public static void main(String[] args) {
+        SpringApplication.run(Serveur.class, args);
+    }
+
+    @Override
+    public void run(String... args) throws Exception {
         Serveur serveur = new Serveur();
         serveur.lancerServeur(5555);
     }
@@ -143,4 +158,6 @@ public class Serveur implements CommandesServeur {
         System.out.println("/help : affiche les commandes serveur");
         System.out.println("----------------------------------------------");
     }
+
+
 }

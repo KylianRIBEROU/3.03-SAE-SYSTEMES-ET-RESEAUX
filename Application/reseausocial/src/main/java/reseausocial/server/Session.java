@@ -284,11 +284,15 @@ public class Session implements Runnable {
         for (Utilisateur utilisateur : serveur.getUtilisateurs()) {
             if (!utilisateur.equals(this.utilisateur) && !this.utilisateur.getAbonnements().contains(utilisateur)) {
                 output.println("- "+utilisateur.toString());
+                cpt++;
             }
-            cpt++;
+            
             if (cpt >= Constantes.LIMITE_NB_UTILISATEURS_SUGGERES) {
                 break;
             }
+        }
+        if (cpt == 0) {
+            output.println("Aucun utilisateur à suivre pour le moment");
         }
     }
 
