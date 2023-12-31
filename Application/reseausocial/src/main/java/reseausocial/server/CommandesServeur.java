@@ -1,4 +1,4 @@
-package reseausocial;
+package reseausocial.server;
 
 public interface CommandesServeur {
     

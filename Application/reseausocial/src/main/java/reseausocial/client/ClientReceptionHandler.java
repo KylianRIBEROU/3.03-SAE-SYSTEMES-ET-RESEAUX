@@ -1,4 +1,4 @@
-package reseausocial;
+package reseausocial.client;
 
 import java.io.IOException;
 
@@ -15,6 +15,9 @@ public class ClientReceptionHandler extends Thread{
         try {
         String serverMessage;
         while ((serverMessage = client.getInput().readLine()) != null) {
+            if (serverMessage.equals("shutdown")) {
+                break;
+            }
             System.out.println(serverMessage);
         }
         } catch (IOException e) {

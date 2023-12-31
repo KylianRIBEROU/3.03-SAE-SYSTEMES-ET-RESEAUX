@@ -1,4 +1,4 @@
-package reseausocial;
+package reseausocial.models;
 
 import java.time.LocalDateTime;
 
@@ -60,7 +60,7 @@ public class Message {
     public String toString() {
         return "{\n" +
                 "  \"id\": " + this.getUuid() + ",\n" +
-                "  \"auteur\": \"" + auteur.getNom() + "\",\n" +
+                "  \"auteur\": \"" + auteur.getNom()+ "\",\n" +
                 "  \"contenu\": \"" + this.getContenu() + "\",\n" +
                 "  \"date\": \"" + this.getDate() + "\",\n" +
                 "  \"nbLikes\": " + this.getNbLikes() + "\n" +
