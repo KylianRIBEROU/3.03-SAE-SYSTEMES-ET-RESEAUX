@@ -19,6 +19,7 @@ public class Utilisateur {
     
     @Id 
     @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "utilisateur_id")
     Long id;
 
     @Column(name = "pseudonyme", nullable = false, unique = true, length = 100)

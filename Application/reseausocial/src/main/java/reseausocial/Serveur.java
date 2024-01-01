@@ -1,15 +1,22 @@
-package reseausocial.server;
+package reseausocial;
 
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.List;
 
+import javax.annotation.PostConstruct;
+
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 
 import reseausocial.models.Message;
 import reseausocial.models.Utilisateur;
+import reseausocial.server.CommandesServeur;
+import reseausocial.server.DatabaseManager;
+import reseausocial.server.ServeurRequeteHandler;
+import reseausocial.server.Session;
 
 import java.util.ArrayList;
 import java.time.LocalDateTime;
@@ -23,10 +30,23 @@ public class Serveur implements CommandesServeur, CommandLineRunner{
     private List<Session> sessions;
     private BufferedReader inputServeur;
 
-    public Serveur() {
+    private final DatabaseManager databaseManager;
+
+    @Autowired
+    public Serveur(DatabaseManager databaseManager) {
         this.utilisateurs = new ArrayList<>();
         this.sessions = new ArrayList<>();
         this.inputServeur = new BufferedReader(new InputStreamReader(System.in));
+
+        this.databaseManager = databaseManager;
+
+       //  System.out.println(databaseManager.getUtilisateurs());
+       //   databaseManager.creerUtilisateur("admin", "admin");
+    }
+
+    @PostConstruct
+    public void init() {
+        System.out.println(databaseManager.getUtilisateurs());
     }
 
     public List<Utilisateur> getUtilisateurs() {
@@ -48,7 +68,7 @@ public class Serveur implements CommandesServeur, CommandLineRunner{
 
     @Override
     public void run(String... args) throws Exception {
-        Serveur serveur = new Serveur();
+        Serveur serveur = new Serveur(databaseManager);
         serveur.lancerServeur(5555);
     }
 

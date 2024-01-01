@@ -2,6 +2,8 @@ package reseausocial.server;
 
 import java.io.BufferedReader;
 
+import reseausocial.Serveur;
+
 public class ServeurRequeteHandler extends Thread {
     
         private Serveur serveur;

@@ -21,18 +21,24 @@ public class Publication {
     
     @Id 
     @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "publi_id")
     Long id;
 
-    @Column(name = "contenu", nullable = false)
+    @Column(name = "publi_contenu", nullable = false)
     String contenu;
 
-    @Column(name = "dateheure", nullable = false, columnDefinition = "DATETIME")
+    @Column(name = "publi_dateheure", nullable = false, columnDefinition = "DATETIME")
     String date;
 
     @Column(name = "nb_likes")
     @ColumnDefault("0")
     @Builder.Default
     int nbLikes = 0;
+
+    @ManyToOne
+    @JoinColumn(name = "utilisateur_id") // Nom de la colonne dans la table "Publication" qui stocke l'ID de l'utilisateur*
+   //   @JoinColumn(name = "utilisateur_id", referencedColumnName = "id")
+    private Utilisateur auteur;
 
     @ManyToMany(mappedBy = "publicationsLikees")
     @Builder.Default
