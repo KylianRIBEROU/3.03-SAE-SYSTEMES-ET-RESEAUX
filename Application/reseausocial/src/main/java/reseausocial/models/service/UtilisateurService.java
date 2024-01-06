@@ -22,7 +22,7 @@ public interface UtilisateurService {
 
     public Utilisateur findById(long id);
 
-    public Utilisateur findByNom(String nom);
+    public Utilisateur findByPseudonyme(String pseudonyme);
 
     public List<Utilisateur> findAll();
     

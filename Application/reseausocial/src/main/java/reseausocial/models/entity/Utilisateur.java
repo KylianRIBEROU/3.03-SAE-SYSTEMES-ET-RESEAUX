@@ -23,7 +23,7 @@ public class Utilisateur {
     Long id;
 
     @Column(name = "pseudonyme", nullable = false, unique = true, length = 100)
-    String nom;
+    String pseudonyme;
 
     @Column(name = "motdepasse", nullable = false , length = 100)
     String motDePasse;

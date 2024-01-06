@@ -1,7 +1,6 @@
 package reseausocial.models.service.impl;
 
 import java.util.List;
-import java.util.Set;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -15,7 +14,6 @@ public class UtilisateurServiceImpl implements UtilisateurService{
     
     private final UtilisateurRepository utilisateurRepository;
 
-
     @Autowired
     public UtilisateurServiceImpl(UtilisateurRepository utilisateurRepository) {
         this.utilisateurRepository = utilisateurRepository;
@@ -26,17 +24,12 @@ public class UtilisateurServiceImpl implements UtilisateurService{
         return utilisateurRepository.findAll();
     }
 
-    public UtilisateurRepository getUtilisateurRepository() {
-        return utilisateurRepository;
-    }
-
-
     public Utilisateur findById(long id) {
         return utilisateurRepository.findById(id);
     }
 
-    public Utilisateur findByNom(String nom) {
-        return utilisateurRepository.findByNom(nom);
+    public Utilisateur findByPseudonyme(String pseudonyme) {
+        return utilisateurRepository.findByPseudonyme(pseudonyme);
     }
 
     public void creerUtilisateur(Utilisateur utilisateur) {
@@ -45,7 +38,7 @@ public class UtilisateurServiceImpl implements UtilisateurService{
 
     public void creerUtilisateur(String pseudonyme, String motDePasse) {
         Utilisateur utilisateur = Utilisateur.builder()
-            .nom(pseudonyme)
+            .pseudonyme(pseudonyme)
             .motDePasse(motDePasse)
             .build();
         utilisateurRepository.save(utilisateur);
@@ -59,7 +52,7 @@ public class UtilisateurServiceImpl implements UtilisateurService{
         utilisateurRepository.deleteById(id);
     }
 
-    public void supprimerUtilisateur(String nom) {
-        utilisateurRepository.deleteByNom(nom);
+    public void supprimerUtilisateur(String pseudonyme) {
+        utilisateurRepository.deleteByPseudonyme(pseudonyme);
     }
 }

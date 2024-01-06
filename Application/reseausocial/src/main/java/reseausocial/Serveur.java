@@ -34,11 +34,14 @@ public class Serveur implements CommandesServeur, CommandLineRunner{
 
     @Autowired
     public Serveur(DatabaseManager databaseManager) {
+        this.databaseManager = databaseManager;
+
+
         this.utilisateurs = new ArrayList<>();
         this.sessions = new ArrayList<>();
         this.inputServeur = new BufferedReader(new InputStreamReader(System.in));
 
-        this.databaseManager = databaseManager;
+       
 
        //  System.out.println(databaseManager.getUtilisateurs());
        //   databaseManager.creerUtilisateur("admin", "admin");
@@ -47,6 +50,7 @@ public class Serveur implements CommandesServeur, CommandLineRunner{
     @PostConstruct
     public void init() {
         System.out.println(databaseManager.getUtilisateurs());
+        System.out.println(databaseManager.findUtilisateurByPseudo("Kylian"));
     }
 
     public List<Utilisateur> getUtilisateurs() {

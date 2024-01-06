@@ -6,13 +6,14 @@ import reseausocial.models.entity.Utilisateur;
 
 public interface UtilisateurRepository extends JpaRepository<Utilisateur, Long> {
 
-    public Utilisateur findByNom(String nom);
+    public Utilisateur findByPseudonyme(String pseudonyme); // null si pas d'utilisateur correspondant
 
     public Utilisateur findById(long id);
 
-    public void deleteByNom(String nom);
+    public void deleteByPseudonyme(String pseudonyme);
 
+    public boolean existsByPseudonyme(String pseudonyme);
+
+    public void deleteById(long id);
     
-
-
 }

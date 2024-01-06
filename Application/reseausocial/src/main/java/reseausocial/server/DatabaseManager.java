@@ -18,13 +18,15 @@ public class DatabaseManager  {
     @Autowired
     private final PublicationService publicationService;
 
-    @Autowired
     public DatabaseManager(UtilisateurService utilisateurService, PublicationService publicationService) {
         this.utilisateurService = utilisateurService;
         this.publicationService = publicationService;
     } 
 
-
+    public Utilisateur findUtilisateurByPseudo(String pseudo) {
+        return utilisateurService.findByPseudonyme(pseudo);
+    }
+    
     public void creerUtilisateur(String pseudonyme, String motDePasse) {
         utilisateurService.creerUtilisateur(pseudonyme, motDePasse);
     }
