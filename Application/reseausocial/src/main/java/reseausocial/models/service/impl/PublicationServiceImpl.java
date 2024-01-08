@@ -9,6 +9,10 @@ import reseausocial.models.entity.Utilisateur;
 import java.time.LocalDateTime;
 import java.util.Set;
 
+import javax.transaction.Transactional;
+
+import java.util.List;
+
 import reseausocial.models.repository.PublicationRepository;
 import reseausocial.models.service.PublicationService;
 import reseausocial.models.service.UtilisateurService;
@@ -27,7 +31,7 @@ public class PublicationServiceImpl implements PublicationService {
         this.utilisateurService = utilisateurService;
     }
 
-    public Set<Publication> findByAuteurId(long id) {
+    public List<Publication> findByAuteurId(long id) {
         return publicationRepository.findByAuteurId(id);
     }
 
@@ -39,19 +43,51 @@ public class PublicationServiceImpl implements PublicationService {
     public void creerPublication(String contenu, long auteurId) {
         Publication publication = Publication.builder()
             .contenu(contenu)
-            .date(LocalDateTime.now().toString())
+            .dateheure(LocalDateTime.now())
             .auteur(utilisateurService.findById(auteurId))
             .build();
         publicationRepository.save(publication);
     }
 
     @Override
+    public void creerPublication(String contenu, Utilisateur auteur) {
+        Publication publication = Publication.builder()
+            .contenu(contenu)
+            .dateheure(LocalDateTime.now())
+            .auteur(auteur)
+            .build();
+        publicationRepository.save(publication);
+    }
+
+    @Override
+    public void creerPublication(String contenu, String pseudonymeAuteur) {
+        Publication publication = Publication.builder()
+            .contenu(contenu)
+            .dateheure(LocalDateTime.now())
+            .auteur(utilisateurService.findByPseudonyme(pseudonymeAuteur))
+            .build();
+        publicationRepository.save(publication);
+    }
+
+    @Override
+    @Transactional
     public void supprimerPublication(long id) {
         publicationRepository.deleteById(id);
     }
 
     @Override
-    public void supprimerPublication(Utilisateur utilisateur) {
+    @Transactional
+    public void supprimerPublicationsDunUtilisateur(Utilisateur utilisateur) {
         publicationRepository.deleteByAuteurId(utilisateur.getId());
+    }
+
+    @Override
+    public List<Publication> findByAuteurPseudonyme(String pseudonyme) {
+        return publicationRepository.findByAuteurPseudonyme(pseudonyme);
+    }
+
+    @Override   
+    public List<Publication> findAll() {
+        return publicationRepository.findAll();
     }
 }

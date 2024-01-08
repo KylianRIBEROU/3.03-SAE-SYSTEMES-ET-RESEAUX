@@ -252,31 +252,33 @@ public class Session implements Runnable {
 
     private String traiterRequeteConnexion() throws IOException{
          // recevoir nom utilisateur rentre par client
-            String inputUsername = input.readLine();
-            this.utilisateur = checkUtilisateurExiste(inputUsername);
-            boolean nouveauCompte = false;
 
-            while (this.utilisateur == null) {
-                output.println("notregistered");
-                output.println("L'utilisateur '" + inputUsername + "' n'existe pas");
-                output.println("Voulez-vous créer un compte avec ce nom ? (y/n)");
-                String reponse = input.readLine();
-                if (reponse.equalsIgnoreCase("y") || reponse.equalsIgnoreCase("yes")) {
-                    this.utilisateur = creerUtilisateur(inputUsername);
-                    nouveauCompte = true;
-                } else {
-                    output.println("Veuillez entrer un autre nom d'utilisateur : ");
-                    inputUsername = input.readLine();
-                    this.utilisateur = checkUtilisateurExiste(inputUsername);
-                }
+        
+        String inputUsername = input.readLine();
+        this.utilisateur = checkUtilisateurExiste(inputUsername);
+        boolean nouveauCompte = false;
+
+        while (this.utilisateur == null) {
+            output.println("notregistered");
+            output.println("L'utilisateur '" + inputUsername + "' n'existe pas");
+            output.println("Voulez-vous créer un compte avec ce nom ? (y/n)");
+            String reponse = input.readLine();
+            if (reponse.equalsIgnoreCase("y") || reponse.equalsIgnoreCase("yes")) {
+                this.utilisateur = creerUtilisateur(inputUsername);
+                nouveauCompte = true;
+            } else {
+                output.println("Veuillez entrer un autre nom d'utilisateur : ");
+                inputUsername = input.readLine();
+                this.utilisateur = checkUtilisateurExiste(inputUsername);
             }
-            String username = this.utilisateur.getNom();
-            System.out.println(username + " s'est connecté" );
-            output.println("Bienvenue " + username + " !");
-            if (nouveauCompte) {
-                this.afficherSuggestionsAbonnements();
-            }
-            return username;
+        }
+        String username = this.utilisateur.getNom();
+        System.out.println(username + " s'est connecté" );
+        output.println("Bienvenue " + username + " !");
+        if (nouveauCompte) {
+            this.afficherSuggestionsAbonnements();
+        }
+        return username;
     }
 
     public void afficherSuggestionsAbonnements(){

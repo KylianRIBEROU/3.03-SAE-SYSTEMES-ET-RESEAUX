@@ -11,8 +11,12 @@ import org.springframework.boot.CommandLineRunner;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 
+// import reseausocial.models.entity.Publication;
+// import reseausocial.models.entity.Utilisateur;
+
 import reseausocial.models.Message;
 import reseausocial.models.Utilisateur;
+import reseausocial.models.entity.Publication;
 import reseausocial.server.CommandesServeur;
 import reseausocial.server.DatabaseManager;
 import reseausocial.server.ServeurRequeteHandler;
@@ -41,7 +45,7 @@ public class Serveur implements CommandesServeur, CommandLineRunner{
         this.sessions = new ArrayList<>();
         this.inputServeur = new BufferedReader(new InputStreamReader(System.in));
 
-       
+        
 
        //  System.out.println(databaseManager.getUtilisateurs());
        //   databaseManager.creerUtilisateur("admin", "admin");
@@ -49,8 +53,35 @@ public class Serveur implements CommandesServeur, CommandLineRunner{
 
     @PostConstruct
     public void init() {
-        System.out.println(databaseManager.getUtilisateurs());
-        System.out.println(databaseManager.findUtilisateurByPseudo("Kylian"));
+        // System.out.println(databaseManager.getUtilisateurs()); // []
+        // System.out.println(databaseManager.findUtilisateurByPseudo("Kylian")); // null
+        // databaseManager.creerUtilisateur("admin", "admin123"); 
+        // System.out.println(databaseManager.getUtilisateurs());
+
+        // //Utilisateur a = databaseManager.findUtilisateurByPseudo("admin");
+
+        // //  databaseManager.creerPublication("Un test 1", a);
+
+        // this.databaseManager.creerPublicationTest("Un test de message", "admin");
+
+        // System.out.println(databaseManager.findAllPublications());
+        // Publication publi = databaseManager.findPublicationById(1);
+        
+        // System.out.println(publi.toString()); 
+
+        // this.databaseManager.supprimerPublication(1);
+
+        // System.out.println(databaseManager.getUtilisateurs());
+        // System.out.println(databaseManager.findPublicationById(1));
+
+        // this.databaseManager.creerPublicationTest("TEST SUPPRESSION CASCADE", "admin");
+
+        // System.out.println(databaseManager.findPublicationById(2));
+
+        // this.databaseManager.supprimerUtilisateur("admin");
+
+        // System.out.println(databaseManager.findPublicationById(2));
+
     }
 
     public List<Utilisateur> getUtilisateurs() {

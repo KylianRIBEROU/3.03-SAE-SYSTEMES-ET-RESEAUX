@@ -1,6 +1,6 @@
 package reseausocial.models.service;
 
-import java.util.Set;
+import java.util.List;
 
 import org.springframework.stereotype.Service;
 
@@ -13,12 +13,22 @@ public interface PublicationService {
 
     public void creerPublication(String contenu, long auteurId);
 
+    public void creerPublication(String contenu, Utilisateur auteur);
+
+    public void creerPublication(String contenu, String pseudonymeAuteur);
+
     public void supprimerPublication(long id);
 
-    public void supprimerPublication(Utilisateur utilisateur);
+    public void supprimerPublicationsDunUtilisateur(Utilisateur utilisateur);
 
     public Publication findById(long id);
 
-    public Set<Publication> findByAuteurId(long id);
+    public List<Publication> findByAuteurId(long id);
+
+    public List<Publication> findByAuteurPseudonyme(String pseudonyme);
+
+    public List<Publication> findAll();
+
+
 
 }

@@ -2,6 +2,8 @@ package reseausocial.models.service.impl;
 
 import java.util.List;
 
+import javax.transaction.Transactional;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -44,14 +46,17 @@ public class UtilisateurServiceImpl implements UtilisateurService{
         utilisateurRepository.save(utilisateur);
     }
 
+    @Transactional
     public void supprimerUtilisateur(Utilisateur utilisateur) {
         utilisateurRepository.delete(utilisateur);
     }
 
+    @Transactional
     public void supprimerUtilisateur(long id) {
         utilisateurRepository.deleteById(id);
     }
 
+    @Transactional
     public void supprimerUtilisateur(String pseudonyme) {
         utilisateurRepository.deleteByPseudonyme(pseudonyme);
     }
