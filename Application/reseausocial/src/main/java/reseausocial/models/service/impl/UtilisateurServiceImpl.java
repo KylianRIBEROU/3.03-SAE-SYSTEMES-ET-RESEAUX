@@ -7,6 +7,7 @@ import javax.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import reseausocial.models.entity.Publication;
 import reseausocial.models.entity.Utilisateur;
 import reseausocial.models.repository.UtilisateurRepository;
 import reseausocial.models.service.UtilisateurService;
@@ -60,4 +61,35 @@ public class UtilisateurServiceImpl implements UtilisateurService{
     public void supprimerUtilisateur(String pseudonyme) {
         utilisateurRepository.deleteByPseudonyme(pseudonyme);
     }
+
+    @Override
+    public void ajoutePublication(Utilisateur utilisateur, Publication publication) {
+        utilisateur.getPublications().add(publication);
+        utilisateurRepository.save(utilisateur);
+    }
+
+    @Override
+    public void ajoutePublication(String pseudonymeUtilisateur, Publication publication) {
+        Utilisateur utilisateur = utilisateurRepository.findByPseudonyme(pseudonymeUtilisateur);
+        utilisateur.getPublications().add(publication);
+        utilisateurRepository.save(utilisateur);
+    }
+
+    @Override
+    public void ajoutePublicationLikee(String pseudoUtilisateur, Publication publication) {
+        Utilisateur utilisateur = utilisateurRepository.findByPseudonyme(pseudoUtilisateur);
+        utilisateur.getPublicationsLikees().add(publication);
+        utilisateurRepository.save(utilisateur);
+    }
+
+    @Override
+    public boolean suivreUtilisateur(Utilisateur utilisateur, Utilisateur utilisateurSuivi) {
+        if (!utilisateur.getAbonnements().contains(utilisateurSuivi)) {
+            utilisateur.getAbonnements().add(utilisateurSuivi);
+            utilisateurRepository.save(utilisateur);
+            return true;
+        }
+        return false;
+    }
+
 }

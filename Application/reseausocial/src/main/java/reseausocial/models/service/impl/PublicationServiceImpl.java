@@ -40,33 +40,37 @@ public class PublicationServiceImpl implements PublicationService {
     }
 
     @Override
-    public void creerPublication(String contenu, long auteurId) {
+    public Publication creerPublication(String contenu, long auteurId) {
         Publication publication = Publication.builder()
             .contenu(contenu)
             .dateheure(LocalDateTime.now())
             .auteur(utilisateurService.findById(auteurId))
             .build();
         publicationRepository.save(publication);
+        return publication;
+
     }
 
     @Override
-    public void creerPublication(String contenu, Utilisateur auteur) {
+    public Publication creerPublication(String contenu, Utilisateur auteur) {
         Publication publication = Publication.builder()
             .contenu(contenu)
             .dateheure(LocalDateTime.now())
             .auteur(auteur)
             .build();
         publicationRepository.save(publication);
+        return publication;
     }
 
     @Override
-    public void creerPublication(String contenu, String pseudonymeAuteur) {
+    public Publication creerPublication(String contenu, String pseudonymeAuteur) {
         Publication publication = Publication.builder()
             .contenu(contenu)
             .dateheure(LocalDateTime.now())
             .auteur(utilisateurService.findByPseudonyme(pseudonymeAuteur))
             .build();
         publicationRepository.save(publication);
+        return publication;
     }
 
     @Override
@@ -89,5 +93,25 @@ public class PublicationServiceImpl implements PublicationService {
     @Override   
     public List<Publication> findAll() {
         return publicationRepository.findAll();
+    }
+
+    // @Transactional ? 
+    @Override
+    public void ajouteLikePublication(long idPublication) {
+        Publication publication = publicationRepository.findPublicationById(idPublication);
+        publication.setNbLikes(publication.getNbLikes() + 1);
+        publicationRepository.save(publication);
+    }
+
+    @Override
+    public void ajouteLikePublication(Publication publication) {
+        publication.setNbLikes(publication.getNbLikes() + 1);
+        publicationRepository.save(publication);
+    }
+
+    @Override
+    public void ajouteUtilisateurAyantLike(Publication publication, String pseudonymeUtilisateur) {
+        publication.getUtilisateursQuiOntLike().add(utilisateurService.findByPseudonyme(pseudonymeUtilisateur));
+        publicationRepository.save(publication);
     }
 }

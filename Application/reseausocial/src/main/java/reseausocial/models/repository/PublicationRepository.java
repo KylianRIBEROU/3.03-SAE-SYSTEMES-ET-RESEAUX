@@ -11,6 +11,8 @@ public interface PublicationRepository extends JpaRepository<Publication, Long>{
 
     public Publication findById(long id);
 
+    public Publication findPublicationById(long id);
+
     public List<Publication> findByAuteurId(long id);
 
     // supprimer toutes les publications d'un utilisateur

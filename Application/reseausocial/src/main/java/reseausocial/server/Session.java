@@ -8,11 +8,15 @@ import java.net.Socket;
 import java.net.SocketException;
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Set;
 import java.util.UUID;
 import lombok.Setter;
 import reseausocial.Serveur;
-import reseausocial.models.Message;
-import reseausocial.models.Utilisateur;
+// import reseausocial.models.Message;
+// import reseausocial.models.Utilisateur;
+
+import reseausocial.models.entity.Utilisateur;
+import reseausocial.models.entity.Publication;
 import reseausocial.resources.Constantes;
 import lombok.Getter;
 
@@ -55,67 +59,71 @@ public class Session implements Runnable {
                     case "/post":
                         if (warningContenuManquant(clientMessage, output)) break;
                         String contenu = clientMessage.split(" ", 2)[1];
-                        Message msgUtil = creerMessage(this.utilisateur, contenu); 
-                        output.println("Message posté : " + msgUtil.toString());
-                        partagerMessage(this.utilisateur, msgUtil); 
+                        Publication publi = this.creerPublication(this.utilisateur.getPseudonyme(), contenu);
+                        output.println("Publication postée : " + publi.toString());
+                        serveur.partagerPublication(utilisateur, publi);
                         break;
                     
                     case "/show-my-posts":
-                        output.println("Liste de vos messages postés:");
-                        List<Message> messages = this.utilisateur.getMessages();
-                        if (messages.isEmpty()) {
-                            output.println("Vous n'avez posté aucun message");
+                        output.println("Liste de vos publications postées :");
+                        Set<Publication> publications = this.utilisateur.getPublications();
+                        if (publications.isEmpty()) {
+                            output.println("Vous n'avez posté aucunes publications ! Utilisez la commande /post pour en poster une");
                         }
-                        for (Message message : messages) {
-                            output.println(message.toString());
+                        for (Publication pub : publications) {
+                            output.println(pub.toString());
                         }
                         break;
 
                     case "/show-all-posts":
                         if (warningContenuManquant(clientMessage, output)) break;
-                        String nomUtil = clientMessage.split(" ", 2)[1];
-                        Utilisateur utilisateur = checkUtilisateurExiste(nomUtil);
+                        String pseudoUtil = clientMessage.split(" ", 2)[1];
+                        Utilisateur utilisateur = this.serveur.getUtilisateurByPseudo(pseudoUtil);
                         if (utilisateur == null) {
-                            output.println("L'utilisateur '" + nomUtil + "' n'existe pas");
+                            output.println("L'utilisateur '" + pseudoUtil + "' n'existe pas");
                         } else {
-                            output.println("Liste des messages de " + nomUtil + " :");
-                            List<Message> messagesUtilisateur = utilisateur.getMessages();
-                            if (messagesUtilisateur.isEmpty()) {
+                            output.println("Liste des messages de " + pseudoUtil + " :");
+                            Set<Publication> publicationsUtilisateur = utilisateur.getPublications();
+                            if (publicationsUtilisateur.isEmpty()) {
                                 output.println("Cet utilisateur n'a posté aucun message");
                             }
-                            for (Message message : messagesUtilisateur) {
-                                output.println(message.toString());
+                            for (Publication p : publicationsUtilisateur) {
+                                output.println(p.toString());
                             }
                         }
                         break;
 
                     case "/show":
                         if (warningContenuManquant(clientMessage, output)) break;
-                        String uuidMessage = clientMessage.split(" ", 2)[1];
-                        Message message = serveur.getMessage(uuidMessage);
-                        if (message == null) {
-                            output.println("Aucun message avec l'id '" + uuidMessage + "' existe sur le serveur");
+                        String idPublication = clientMessage.split(" ", 2)[1];
+                        Long id = Long.parseLong(idPublication);
+                        Publication publication = this.serveur.getPublicationById(id);
+                        if (publication == null) {
+                            output.println("Aucun message avec l'id '" + idPublication + "' existe sur le serveur");
                         } else {
-                            output.println(message.toString());
+                            output.println(publication.toString());
                         }
                         break;
 
                     case "/like":
                         if (warningContenuManquant(clientMessage, output)) break;
-                        String uuid = clientMessage.split(" ", 2)[1];
-                        Message msg = serveur.likeMessage(uuid);
-                        if (msg == null) {
-                            output.println("Aucun message avec l'id '" + uuid + "' n'existe sur le serveur");
+                        String idPubli= clientMessage.split(" ", 2)[1];
+                        Long idPubliLong = Long.parseLong(idPubli);  //TODO: check idPubli est nombre avant, pour éviter que ParseLong lève une exception
+                        Publication publiLike = this.serveur.getPublicationById(idPubliLong);
+                        if (publiLike == null) {
+                            output.println("Aucun message avec l'id '" + idPubli + "' n'existe sur le serveur");
                         } else {
-                            output.println("Message liké avec succès ! ( id : " + uuid + " )");
+                            this.serveur.utilisateurLikePublication(this.utilisateur.getPseudonyme(), idPubliLong);
+                            output.println("Message liké avec succès ! ( id : " + idPubli + " )");
                         }
                         break;
 
                     case "/delete":
                         if (warningContenuManquant(clientMessage, output)) break;
-                        String uuidDelete = clientMessage.split(" ", 2)[1];
-                        if (this.utilisateur.supprimeMessage(uuidDelete)) {
-                            output.println("Message supprimé avec succès ! ( id : " + uuidDelete + " )");
+                        String idMessageADelete = clientMessage.split(" ", 2)[1];
+                        Long idPubliADeleteLong = Long.parseLong(idMessageADelete);
+                        if (this.serveur.deletePublicationById(idPubliADeleteLong)) {
+                            output.println("Message supprimé avec succès ! ( id : " + idMessageADelete + " )");
                         } else {
                             output.println("Vous n'avez posté aucun message avec cet ID.");
                         }
@@ -124,28 +132,27 @@ public class Session implements Runnable {
                     case "/follow":
                         if (warningContenuManquant(clientMessage, output)) break;
                         String nomUtilisateur = clientMessage.split(" ", 2)[1];
-                        Utilisateur utilisateurSuivi = checkUtilisateurExiste(nomUtilisateur);
-                        if (utilisateurSuivi == null) {
+                        Utilisateur utilisateurASuivre = this.serveur.getUtilisateurByPseudo(nomUtilisateur);
+                        if (utilisateurASuivre == null) {
                             output.println("L'utilisateur " + nomUtilisateur + " n'existe pas");
                         } else {
-                            if (this.utilisateur.getAbonnements().contains(utilisateurSuivi)) {
+                            if (!this.serveur.suivreUtilisateur(utilisateur, utilisateurASuivre)){
                                 output.println("Vous suivez déjà " + nomUtilisateur);
                                 break;
                             }
-                            this.utilisateur.ajouteAbonnement(utilisateurSuivi);
                             output.println("Vous suivez maintenant " + nomUtilisateur);
                         }
                         break;
                     
                     case "/unfollow":
                         if (warningContenuManquant(clientMessage, output)) break;
-                        String nomUtilisateurUnfollow = clientMessage.split(" ", 2)[1];
-                        Utilisateur utilisateurUnfollow = checkUtilisateurExiste(nomUtilisateurUnfollow);
+                        String nomUtilisateurAUnfollow = clientMessage.split(" ", 2)[1];
+                        Utilisateur utilisateurUnfollow = checkUtilisateurExiste(nomUtilisateurAUnfollow); //TODO
                         if (utilisateurUnfollow == null) {
-                            output.println("L'utilisateur à unfollow '" + nomUtilisateurUnfollow + "' n'existe pas");
+                            output.println("L'utilisateur à unfollow '" + nomUtilisateurAUnfollow + "' n'existe pas");
                         } else {
                             this.utilisateur.supprimeAbonnement(utilisateurUnfollow);
-                            output.println("Vous ne suivez plus " + nomUtilisateurUnfollow);
+                            output.println("Vous ne suivez plus " + nomUtilisateurAUnfollow);
                         }
                         break;
 
@@ -243,11 +250,22 @@ public class Session implements Runnable {
         output.println("----------------------------------------------");
     }
 
-    public void recevoirMessage(Message message) {
+    // public void recevoirMessage(Message message) {
+    //     output.println("-------------------------------------");
+    //     output.println("Message posté par une personne que vous suivez");
+    //     output.println(message.toString());
+    //     output.println("-------------------------------------");
+    // }
+    
+    public void recevoirPublication(Publication publication){
         output.println("-------------------------------------");
-        output.println("Message posté par une personne que vous suivez");
-        output.println(message.toString());
+        output.println("Publication postée par une personne que vous suivez");
+        output.println(publication.toString());
         output.println("-------------------------------------");
+    }
+
+    public Publication creerPublication(String pseudoAuteur, String contenu){
+        return this.serveur.creerPublication(pseudoAuteur, contenu);
     }
 
     private String traiterRequeteConnexion() throws IOException{
@@ -255,6 +273,7 @@ public class Session implements Runnable {
 
         
         String inputUsername = input.readLine();
+        
         this.utilisateur = checkUtilisateurExiste(inputUsername);
         boolean nouveauCompte = false;
 
@@ -336,11 +355,21 @@ public class Session implements Runnable {
         this.clientSocket.close();
     }
 
+    // /**
+    //  * Méthode qui renvoie une représentation de la session en String
+    //  */
+    // @Override
+    // public String toString(){
+    //     return "Session de "+this.utilisateur.getNom();
+    // }
+
+
     /**
      * Méthode qui renvoie une représentation de la session en String
      */
     @Override
     public String toString(){
-        return "Session de "+this.utilisateur.getNom();
+        return "Session de "+this.utilisateur.getPseudonyme();
     }
+
 }

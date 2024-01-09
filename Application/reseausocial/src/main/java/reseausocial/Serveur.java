@@ -11,12 +11,11 @@ import org.springframework.boot.CommandLineRunner;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 
-// import reseausocial.models.entity.Publication;
-// import reseausocial.models.entity.Utilisateur;
-
-import reseausocial.models.Message;
-import reseausocial.models.Utilisateur;
 import reseausocial.models.entity.Publication;
+import reseausocial.models.entity.Utilisateur;
+
+// import reseausocial.models.Message;
+// import reseausocial.models.Utilisateur;
 import reseausocial.server.CommandesServeur;
 import reseausocial.server.DatabaseManager;
 import reseausocial.server.ServeurRequeteHandler;
@@ -41,7 +40,7 @@ public class Serveur implements CommandesServeur, CommandLineRunner{
         this.databaseManager = databaseManager;
 
 
-        this.utilisateurs = new ArrayList<>();
+        this.utilisateurs = this.databaseManager.getUtilisateurs();
         this.sessions = new ArrayList<>();
         this.inputServeur = new BufferedReader(new InputStreamReader(System.in));
 
@@ -141,12 +140,67 @@ public class Serveur implements CommandesServeur, CommandLineRunner{
         }
     }
 
+    public void partagerPublication(Utilisateur utilisateur, Publication publication) {
+        for (Session session : this.sessions) {
+            if (utilisateur.getAbonnes().contains(session.getUtilisateur())) { //TODO: fix
+                session.recevoirPublication(publication);
+            }
+        }
+    }
+
+    public Publication getPublicationById(Long idPublication) {
+        return this.databaseManager.findPublicationById(idPublication);
+    }
+
+    public Utilisateur getUtilisateurByPseudo(String pseudonyme){
+        return this.databaseManager.findUtilisateurByPseudonyme(pseudonyme);
+    }
+
+    public List<Publication> getPublicationsUtilisateur(String pseudoUtilisateur) {
+        return this.databaseManager.getPublicationsByUtilisateurPseudo(pseudoUtilisateur);
+    }
+
+    public List<Publication> getPublicationsUtilisateur(Utilisateur utilisateur){
+        return this.databaseManager.getPublicationsUtilisateur(utilisateur);
+    }
+
+    public boolean checkUtilisateurCredentials(String pseudo, String motDePasse){
+        return this.databaseManager.checkUtilisateurCredentials(pseudo, motDePasse);
+    }
+
+    public Publication creerPublication(String contenu, String pseudoAuteur) {
+        Publication publication = this.databaseManager.creerPublication(contenu, pseudoAuteur);
+        Utilisateur auteur = this.databaseManager.findUtilisateurByPseudonyme(pseudoAuteur);
+        this.partagerPublication(auteur, publication);
+        return publication;
+    }
+
+    public boolean utilisateurExiste(String pseudo) {
+        return this.databaseManager.findUtilisateurByPseudonyme(pseudo) != null;
+    }
+
+    public boolean unfollowUtilisateur(String pseudoUtilisateur, String pseudoUtilisateurSuivi) {
+        return this.databaseManager.unfollowUtilisateur(pseudoUtilisateur, pseudoUtilisateurSuivi);
+    }
+
+    public boolean suivreUtilisateur(String pseudoUtilisateur, String pseudoUtilisateurASuivre ){
+        return this.databaseManager.suivreUtilisateur(pseudoUtilisateur, pseudoUtilisateurASuivre);
+    }
+
+    public boolean suivreUtilisateur(Utilisateur utilisateur, Utilisateur utilisateurASuivre ){
+        return this.databaseManager.suivreUtilisateur(utilisateur, utilisateurASuivre);
+    }
+
     public Message likeMessage(String uuidMessage){
         Message message = this.getMessage(uuidMessage);
         if (message!=null){
             message.likeMessage();
         }
         return message;
+    }
+
+    public Publication utilisateurLikePublication(String pseudoUtilisateur, Long idPublication){
+        return this.databaseManager.utilisateurLikePublication(pseudoUtilisateur, idPublication); 
     }
 
     private void displayUpTime(LocalDateTime dateInitServ){
@@ -162,6 +216,10 @@ public class Serveur implements CommandesServeur, CommandLineRunner{
                 if (message!=null) return message;
             }
         return null;
+    }
+
+    public boolean deletePublicationById(Long idPublication){
+        return this.databaseManager.supprimerPublication(idPublication);
     }
 
     @Override

@@ -11,11 +11,11 @@ import reseausocial.models.entity.Utilisateur;
 public interface PublicationService {
 
 
-    public void creerPublication(String contenu, long auteurId);
+    public Publication creerPublication(String contenu, long auteurId);
 
-    public void creerPublication(String contenu, Utilisateur auteur);
+    public Publication creerPublication(String contenu, Utilisateur auteur);
 
-    public void creerPublication(String contenu, String pseudonymeAuteur);
+    public Publication creerPublication(String contenu, String pseudonymeAuteur);
 
     public void supprimerPublication(long id);
 
@@ -28,6 +28,12 @@ public interface PublicationService {
     public List<Publication> findByAuteurPseudonyme(String pseudonyme);
 
     public List<Publication> findAll();
+
+    public void ajouteLikePublication(long idPublication);
+
+    public void ajouteLikePublication(Publication publication);
+
+    public void ajouteUtilisateurAyantLike(Publication publication, String pseudonymeUtilisateur);
 
 
 
