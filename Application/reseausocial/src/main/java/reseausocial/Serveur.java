@@ -53,36 +53,12 @@ public class Serveur implements CommandesServeur, CommandLineRunner{
        //   databaseManager.creerUtilisateur("admin", "admin");
     }
 
+    /**
+     * Méthode qui est appelée après la création de l'objet Serveur
+     * utilisée à des fins de tests et débuggage
+     */
     @PostConstruct
     public void init() {
-        // System.out.println(databaseManager.getUtilisateurs()); // []
-        // System.out.println(databaseManager.findUtilisateurByPseudo("Kylian")); // null
-        // databaseManager.creerUtilisateur("admin", "admin123"); 
-        // System.out.println(databaseManager.getUtilisateurs());
-
-        // //Utilisateur a = databaseManager.findUtilisateurByPseudo("admin");
-
-        // //  databaseManager.creerPublication("Un test 1", a);
-
-        // this.databaseManager.creerPublicationTest("Un test de message", "admin");
-
-        // System.out.println(databaseManager.findAllPublications());
-        // Publication publi = databaseManager.findPublicationById(1);
-        
-        // System.out.println(publi.toString()); 
-
-        // this.databaseManager.supprimerPublication(1);
-
-        // System.out.println(databaseManager.getUtilisateurs());
-        // System.out.println(databaseManager.findPublicationById(1));
-
-        // this.databaseManager.creerPublicationTest("TEST SUPPRESSION CASCADE", "admin");
-
-        // System.out.println(databaseManager.findPublicationById(2));
-
-        // this.databaseManager.supprimerUtilisateur("admin");
-
-        // System.out.println(databaseManager.findPublicationById(2));
 
     }
 
