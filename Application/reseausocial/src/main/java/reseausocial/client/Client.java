@@ -10,6 +10,8 @@ import lombok.Getter;
 import lombok.Setter;
 import reseausocial.resources.Constantes;
 
+import java.io.Console;
+
 
 @Getter
 @Setter
@@ -20,6 +22,7 @@ public class Client {
     private PrintWriter output;
 
     private BufferedReader inputClient;
+    private Console inputMotDePasseClient;
 
     public static void main(String[] args) {
         if (args.length < 2) {
@@ -47,6 +50,8 @@ public class Client {
             this.output = new PrintWriter(socket.getOutputStream(), true);
             this.inputClient = new BufferedReader(new InputStreamReader(System.in));
 
+            this.inputMotDePasseClient = System.console();
+
         }
         catch (IOException  e) {
             System.out.println("Le serveur est hors ligne ou n'existe pas");
@@ -55,24 +60,23 @@ public class Client {
 
     }
 
-    private void client(String user) {
+    private void client(String pseudonymeUtilisateur) {
 
          try {
            
-            requeteConnexion(user);
-            
             ClientReceptionHandler receptionMsgServHandler = new ClientReceptionHandler(this);
             receptionMsgServHandler.start(); // réception message serveur threadisé
-
-
+            
             ClientEnvoiHandler envoiMsgServHandler = new ClientEnvoiHandler(this);
-            envoiMsgServHandler.start(); // envoi message serveur threadisé
+            envoiMsgServHandler.start(); // envoi message serveur threadis
+            
+           // traiterRequeteConnexion(pseudonymeUtilisateur);
 
 //             //TODO:  apres s'etre connecté ou créé compte Il voit ensuite la liste des différents messages postés par les utilisateurs
 // auxquels il est abonné, dans l’ordre chronologique (une limite du nombre de messages affichés
 // devra être implantée).
 
-            receptionMsgServHandler.join();
+            receptionMsgServHandler.join(); // dans la logique à implémenter, si serveur down, on ferme le client
             // envoiMsgServHandler.join();
             fermetureClient();
             
@@ -81,41 +85,41 @@ public class Client {
         }
     }
 
-    private void requeteConnexion(String user) throws IOException {
-            output.println(user);
-            String serverResponse = input.readLine();
+    // private void traiterRequeteConnexion(String pseudonyme) throws IOException {
+    //         output.println(pseudonyme);
+    //         String serverResponse = input.readLine();
 
-            // Si le serveur propose la création d'un compte
-            while (serverResponse.contains("notregistered")) {
-                System.out.println(input.readLine());
-                System.out.println(input.readLine());
-                System.out.print("> ");
-                String reponse = inputClient.readLine();
+    //         // Si le serveur propose la création d'un compte
+    //         while (serverResponse.contains("notregistered")) {
+    //             System.out.println(input.readLine());
+    //             System.out.println(input.readLine());
+    //             System.out.print("> ");
+    //             String reponse = inputClient.readLine();
 
-                output.println(reponse);
+    //             output.println(reponse);
 
-                // Si le client souhaite créer un compte avec ce nom
-                if (!reponse.equalsIgnoreCase("y") && !reponse.equalsIgnoreCase("yes")) {
+    //             // Si le client souhaite créer un compte avec ce nom
+    //             if (!reponse.equalsIgnoreCase("y") && !reponse.equalsIgnoreCase("yes")) {
                     
-                    System.out.println(input.readLine());
-                    System.out.print("> ");
-                    user = inputClient.readLine();
-                    output.println(user);
-                }
-                else if (reponse.equalsIgnoreCase("y") || reponse.equalsIgnoreCase("yes")){
-                    serverResponse = input.readLine();
-                    break;
-                }
-                else {
-                    System.out.println("Choix invalide");
-                    System.exit(1);
-                }
+    //                 System.out.println(input.readLine());
+    //                 System.out.print("> ");
+    //                 pseudonyme = inputClient.readLine();
+    //                 output.println(pseudonyme);
+    //             }
+    //             else if (reponse.equalsIgnoreCase("y") || reponse.equalsIgnoreCase("yes")){
+    //                 serverResponse = input.readLine();
+    //                 break;
+    //             }
+    //             else {
+    //                 System.out.println("Choix invalide");
+    //                 System.exit(1);
+    //             }
 
-                serverResponse = input.readLine();
-            }
+    //             serverResponse = input.readLine();
+    //         }
 
-            System.out.println(serverResponse);
-    }
+    //         System.out.println(serverResponse);
+    // }
 
     private void fermetureClient() throws IOException{
             input.close();

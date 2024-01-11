@@ -39,12 +39,13 @@ public class UtilisateurServiceImpl implements UtilisateurService{
         utilisateurRepository.save(utilisateur);
     }
 
-    public void creerUtilisateur(String pseudonyme, String motDePasse) {
+    public Utilisateur creerUtilisateur(String pseudonyme, String motDePasse) {
         Utilisateur utilisateur = Utilisateur.builder()
             .pseudonyme(pseudonyme)
             .motDePasse(motDePasse)
             .build();
         utilisateurRepository.save(utilisateur);
+        return utilisateur;
     }
 
     @Transactional
@@ -90,6 +91,25 @@ public class UtilisateurServiceImpl implements UtilisateurService{
             return true;
         }
         return false;
+    }
+
+    @Override
+    public boolean unfollowUtilisateur(Utilisateur utilisateur, Utilisateur utilisateurSuivi) {
+        if (utilisateur.getAbonnements().contains(utilisateurSuivi)) {
+            utilisateur.getAbonnements().remove(utilisateurSuivi);
+            utilisateurRepository.save(utilisateur);
+            return true;
+        }
+        return false;
+    }
+
+    public void test(){
+    }
+
+
+    @Override
+    public List<Utilisateur> findRandomUtilisateurs(String pseudonyme, int limite) {
+        return utilisateurRepository.findRandomUtilisateurs(pseudonyme, limite);
     }
 
 }

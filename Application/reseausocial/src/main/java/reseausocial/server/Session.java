@@ -6,14 +6,10 @@ import java.io.InputStreamReader;
 import java.io.PrintWriter;
 import java.net.Socket;
 import java.net.SocketException;
-import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Set;
-import java.util.UUID;
 import lombok.Setter;
 import reseausocial.Serveur;
-// import reseausocial.models.Message;
-// import reseausocial.models.Utilisateur;
 
 import reseausocial.models.entity.Utilisateur;
 import reseausocial.models.entity.Publication;
@@ -28,6 +24,7 @@ public class Session implements Runnable {
     private Serveur serveur;
     private Socket clientSocket;
     private Utilisateur utilisateur;
+    private String pseudoUtilConnecte;
 
     private BufferedReader input;
     private PrintWriter output;
@@ -36,6 +33,7 @@ public class Session implements Runnable {
         this.serveur = serveur;
         this.clientSocket = clientSocket;
         this.utilisateur = null;
+        this.pseudoUtilConnecte = "N/A";
 
         try {
             this.input = new BufferedReader(new InputStreamReader(clientSocket.getInputStream()));
@@ -47,19 +45,24 @@ public class Session implements Runnable {
 
     @Override
     public void run() {
-    
         try {
-            String username = traiterRequeteConnexion();
-        
+            this.utilisateur =  traiterRequeteConnexion();
+            if (this.utilisateur == null){
+                fermerSession();
+                return; //TODO : check ca et enelver celui a la fin du while
+            }
+            this.pseudoUtilConnecte = this.utilisateur.getPseudonyme();
+            output.println(String.format("Connexion réussie. Bienvenue %s !", this.pseudoUtilConnecte));
+
             String clientMessage;
             while ((clientMessage = input.readLine()) != null) {
-                // clientMessage.split(" ", 2) // va split seulement sur le premier espace
+                // clientMessage.split(" ", 2) // va split seulement sur le premier espace"
                 // [0] pour 1ere partie, [1 pour le reste]
                 switch (clientMessage.split(" ", 2)[0]) {
                     case "/post":
                         if (warningContenuManquant(clientMessage, output)) break;
                         String contenu = clientMessage.split(" ", 2)[1];
-                        Publication publi = this.creerPublication(this.utilisateur.getPseudonyme(), contenu);
+                        Publication publi = this.creerPublication(pseudoUtilConnecte, contenu);
                         output.println("Publication postée : " + publi.toString());
                         serveur.partagerPublication(utilisateur, publi);
                         break;
@@ -113,7 +116,7 @@ public class Session implements Runnable {
                         if (publiLike == null) {
                             output.println("Aucun message avec l'id '" + idPubli + "' n'existe sur le serveur");
                         } else {
-                            this.serveur.utilisateurLikePublication(this.utilisateur.getPseudonyme(), idPubliLong);
+                            this.serveur.utilisateurLikePublication(pseudoUtilConnecte, idPubliLong); //TODO: check que utilisateur a pas deja liken de la base de
                             output.println("Message liké avec succès ! ( id : " + idPubli + " )");
                         }
                         break;
@@ -122,7 +125,7 @@ public class Session implements Runnable {
                         if (warningContenuManquant(clientMessage, output)) break;
                         String idMessageADelete = clientMessage.split(" ", 2)[1];
                         Long idPubliADeleteLong = Long.parseLong(idMessageADelete);
-                        if (this.serveur.deletePublicationById(idPubliADeleteLong)) {
+                        if (this.serveur.deletePublication(idPubliADeleteLong)) {
                             output.println("Message supprimé avec succès ! ( id : " + idMessageADelete + " )");
                         } else {
                             output.println("Vous n'avez posté aucun message avec cet ID.");
@@ -136,7 +139,7 @@ public class Session implements Runnable {
                         if (utilisateurASuivre == null) {
                             output.println("L'utilisateur " + nomUtilisateur + " n'existe pas");
                         } else {
-                            if (!this.serveur.suivreUtilisateur(utilisateur, utilisateurASuivre)){
+                            if (!this.serveur.suivreUtilisateur(this.utilisateur, utilisateurASuivre)){
                                 output.println("Vous suivez déjà " + nomUtilisateur);
                                 break;
                             }
@@ -147,12 +150,16 @@ public class Session implements Runnable {
                     case "/unfollow":
                         if (warningContenuManquant(clientMessage, output)) break;
                         String nomUtilisateurAUnfollow = clientMessage.split(" ", 2)[1];
-                        Utilisateur utilisateurUnfollow = checkUtilisateurExiste(nomUtilisateurAUnfollow); //TODO
+                        Utilisateur utilisateurUnfollow = this.serveur.getUtilisateurByPseudo(nomUtilisateurAUnfollow);
                         if (utilisateurUnfollow == null) {
                             output.println("L'utilisateur à unfollow '" + nomUtilisateurAUnfollow + "' n'existe pas");
                         } else {
-                            this.utilisateur.supprimeAbonnement(utilisateurUnfollow);
-                            output.println("Vous ne suivez plus " + nomUtilisateurAUnfollow);
+                           if (this.serveur.unfollowUtilisateur(this.utilisateur, utilisateurUnfollow)){
+                                output.println("Vous ne suivez plus " + nomUtilisateurAUnfollow);
+                           }
+                            else{
+                                output.println("Vous ne suivez pas " + nomUtilisateurAUnfollow);
+                            }
                         }
                         break;
 
@@ -166,15 +173,15 @@ public class Session implements Runnable {
                 }
                 if (this.utilisateur == null){
                     output.println("Utilisateur supprimé par un administrateur. Déconnexion");
-                    output.println("shutdown");
+                    output.println("shutdown"); //TODO: changer comportement pour forcer déconnexion
                     break;
                 }
             }
-            System.out.println(username + " s'est déconnecté");
+            System.out.println(pseudoUtilConnecte + " s'est déconnecté.");
             fermerSession();
         }
         catch (SocketException e){
-            System.out.println("Session de "+ this.utilisateur.getNom() + " interrompue");
+            System.out.println("Session de "+ pseudoUtilConnecte + " interrompue");
         }
         catch (IOException e) {
             e.printStackTrace();
@@ -185,65 +192,18 @@ public class Session implements Runnable {
     }
 
     /**
-     * Méthode qui vérifie si un utilisateur existe déjà dans la liste des utilisateurs du serveur
-     * @param nomUtilisateur
-     * @return l'utilisateur s'il existe, null sinon
-     */
-    private Utilisateur checkUtilisateurExiste(String nomUtilisateur) {
-        for (Utilisateur utilisateur : serveur.getUtilisateurs()) {
-            if (utilisateur.getNom().equals(nomUtilisateur)) {
-                return utilisateur;
-            }
-        }
-        return null;
-    }
-
-    /**
-     *  Méthode qui crée un utilisateur et l'ajoute à la liste des utilisateurs du serveur
-     * @param nomUtilisateur
-     * @return l'utilisateur créé
-     */
-    private Utilisateur creerUtilisateur(String nomUtilisateur) {
-        Utilisateur utilisateur = new Utilisateur(nomUtilisateur);
-        serveur.ajouteUtilisateur(utilisateur);
-        return utilisateur;
-    }
-
-    /**
-     * Méthode qui crée un message et l'ajoute à la liste des messages de l'utilisateur
-     * @param utilisateur
-     * @param contenu
-     * @return le message créé
-     */
-    private Message creerMessage(Utilisateur utilisateur, String contenu){
-        Message message = Message.builder()
-            .uuid(UUID.randomUUID().toString())
-            .auteur(utilisateur)
-            .contenu(contenu)
-            .date(LocalDateTime.now())
-            .nbLikes(0)
-            .build();
-        utilisateur.ajouteMessage(message);
-        return message;
-    }
-
-    private void partagerMessage(Utilisateur utilisateur, Message message){
-        this.serveur.redirigerMessage(utilisateur, message);
-    }
-
-    /**
      * Méthode qui affiche au client la liste des commandes disponibles
      * @param output
      */
     private void afficherMenuAideClient(PrintWriter output) {
         output.println("----------------------------------------------");
         output.println("Liste des commandes disponibles pour le client:");
-        output.println("/post <contenu> : poster un message");
-        output.println("/show-my-posts : afficher la liste de vos messages postés");
-        output.println("/show-all-posts <nom_utilisateur> : afficher la liste des messages postés par un utilisateur");
-        output.println("/show <uuid> : afficher un message");
-        output.println("/like <uuid> : liker un message");
-        output.println("/delete <uuid> : supprimer un de vos messages");
+        output.println("/post <contenu> : poster une publication");
+        output.println("/show-my-posts : afficher la liste des publicatiokns que vous avez postées");
+        output.println("/show-all-posts <nom_utilisateur> : afficher la liste des publications postées par un utilisateur");
+        output.println("/show <id_publication> : afficher une publication");
+        output.println("/like <id_publication> : liker une publication");
+        output.println("/delete <id_publication> : supprimer une de vos publications");
         output.println("/follow <nom_utilisateur> : suivre un utilisateur");
         output.println("/unfollow <nom_utilisateur> : ne plus suivre un utilisateur");
         output.println("/help : afficher la liste des commandes disponibles");
@@ -268,53 +228,106 @@ public class Session implements Runnable {
         return this.serveur.creerPublication(pseudoAuteur, contenu);
     }
 
-    private String traiterRequeteConnexion() throws IOException{
-         // recevoir nom utilisateur rentre par client
+    private Utilisateur traiterRequeteConnexion() throws IOException{
+        // recevoir nom utilisateur rentre par client
 
-        
-        String inputUsername = input.readLine();
-        
-        this.utilisateur = checkUtilisateurExiste(inputUsername);
-        boolean nouveauCompte = false;
+        output.println("Vous êtes connecté au serveur sur l'ip " + this.clientSocket.getInetAddress() + ", port " + this.clientSocket.getPort()+" !");
+        afficherOptionsDeConnexion();
+    
+        String requeteClient;
+        boolean connecte = false;
+        while (((requeteClient = input.readLine()) != null) || connecte) {
+            
+            switch (requeteClient) {
+                case "1":
+                    output.println("Nom d'utilisateur :");
+                    String inputPseudonyme = input.readLine();
+                    output.println("Mot de passe :");
+                    // TODO: trouver truc pour que la saisie du mdp seulement soit
+                    // cachée dans le terminal 
+                    //output.println("hideinput"); et le client réagirait a cet output jsp
+                    String inputMotDePasse = input.readLine();
+                    if (this.serveur.checkUtilisateurCredentials(inputPseudonyme, inputMotDePasse)){
+                        connecte = true;
+                        return this.serveur.getUtilisateurByPseudo(inputPseudonyme);
+                    }
+                    else{
+                        output.println("Nom d'utilisateur ou mot de passe incorrect");
+                        afficherOptionsDeConnexion();
+                    }
+                    
+                    break;
+                case "2":
+                    String nouveauPseudo ="";
+                    while (nouveauPseudo.equals("")){
+                        output.println("Veuillez choisir un nom d'utilisateur :");
+                        nouveauPseudo = input.readLine();
+                        // pseudo sans caractères spéciaux
+                        if (!Serveur.pseudonymeUtilisateurValide(nouveauPseudo)){
+                            output.println("Veuillez entrer un nom d'utilisateur valide. Max 100 caractères. Pas de caractères spéciaux.");
+                            nouveauPseudo = "";
+                        }
+                        else if (this.serveur.UtilisateurExiste(nouveauPseudo)){
+                            output.println("Ce nom d'utilisateur est déjà pris");
+                            nouveauPseudo = "";
+                        }
+                        else {
+                            break;
+                        }
+                    }
+                    String nouveauMotDePasse = "";
+                    String confirmationMotDePasse = "";
+                    boolean mdpValides = false;
+                    while (!mdpValides){
+                        output.println("Veuillez choisir un mot de passe :");
+                                        
+                    // TODO: trouver truc pour que la saisie du mdp seulement soit
+                    // cachée dans le terminal 
+                    //output.println("hideinput"); et le client réagirait a cet output
+                        nouveauMotDePasse = input.readLine();
 
-        while (this.utilisateur == null) {
-            output.println("notregistered");
-            output.println("L'utilisateur '" + inputUsername + "' n'existe pas");
-            output.println("Voulez-vous créer un compte avec ce nom ? (y/n)");
-            String reponse = input.readLine();
-            if (reponse.equalsIgnoreCase("y") || reponse.equalsIgnoreCase("yes")) {
-                this.utilisateur = creerUtilisateur(inputUsername);
-                nouveauCompte = true;
-            } else {
-                output.println("Veuillez entrer un autre nom d'utilisateur : ");
-                inputUsername = input.readLine();
-                this.utilisateur = checkUtilisateurExiste(inputUsername);
+                        if (nouveauMotDePasse.length() >= 100 || nouveauMotDePasse.length() < 1){
+                            output.println("Veuillez entrer un mot de passe valide. Max 100 caractères.");
+                        }
+                        else{
+                            output.println("Veuillez confirmer votre mot de passe :");
+                            confirmationMotDePasse = input.readLine();
+                            if (nouveauMotDePasse.equals(confirmationMotDePasse)){
+                                mdpValides = true;
+                            }
+                            else{
+                                output.println("Les mots de passe ne correspondent pas.");
+                            }
+                        }
+                    } 
+
+                    output.println("Création du compte en cours...");
+                    return this.serveur.creerUtilisateur(nouveauPseudo, nouveauMotDePasse);
+                case "3":
+                    output.println("shutdown");
+                    fermerSession(); //TODO: VERIFIER QUE TOUT EST BIEN FERME
+                    break;
+                default:
+                    output.println("Veuillez choisir une option valide (1, 2 ou 3)");
+                    break;
             }
         }
-        String username = this.utilisateur.getNom();
-        System.out.println(username + " s'est connecté" );
-        output.println("Bienvenue " + username + " !");
-        if (nouveauCompte) {
-            this.afficherSuggestionsAbonnements();
-        }
-        return username;
+        return null;
     }
 
+    /**
+     * Méthode qui affiche une liste d'utilisateurs que l'utilisateur pourrait suivre
+     */
     public void afficherSuggestionsAbonnements(){
         output.println("Vous venez de créer un compte ! Voici une liste d'utilisateurs que vous pourriez suivre :");
-        int cpt = 0;
-        for (Utilisateur utilisateur : serveur.getUtilisateurs()) {
-            if (!utilisateur.equals(this.utilisateur) && !this.utilisateur.getAbonnements().contains(utilisateur)) {
-                output.println("- "+utilisateur.toString());
-                cpt++;
-            }
-            
-            if (cpt >= Constantes.LIMITE_NB_UTILISATEURS_SUGGERES) {
-                break;
-            }
-        }
-        if (cpt == 0) {
+        List<Utilisateur> utilisateursSuggeres = this.serveur.getListeSuggestionUtilisateurs(this.utilisateur.getPseudonyme(), Constantes.LIMITE_NB_UTILISATEURS_SUGGERES);
+        if (utilisateursSuggeres.isEmpty()){
             output.println("Aucun utilisateur à suivre pour le moment");
+        }
+        else{
+        for (Utilisateur util: utilisateursSuggeres){
+                output.println(util.toString());
+            }
         }
     }
 
@@ -345,6 +358,12 @@ public class Session implements Runnable {
         return false;
     }
 
+    public void afficherOptionsDeConnexion(){
+        output.println("Veuillez choisir une option (1-3) :");
+        output.println("1. Se connecter");
+        output.println("2. Créer un compte");
+        output.println("3. Quitter");
+    }
     /**
      * Méthode qui ferme la session en fermant les flux et le socket
      * @throws IOException

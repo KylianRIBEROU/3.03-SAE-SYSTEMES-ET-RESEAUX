@@ -3,6 +3,7 @@ package reseausocial;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.List;
+import java.util.Set;
 
 import javax.annotation.PostConstruct;
 
@@ -29,6 +30,7 @@ import java.io.InputStreamReader;
 @SpringBootApplication
 public class Serveur implements CommandesServeur, CommandLineRunner{
 
+    //TODO: avoir une classe avec des méthodes pour gérer les commandes .Comme ca on pourrait partager les commandes entre le client et le serveur
     private List<Utilisateur> utilisateurs;
     private List<Session> sessions;
     private BufferedReader inputServeur;
@@ -41,6 +43,7 @@ public class Serveur implements CommandesServeur, CommandLineRunner{
 
 
         this.utilisateurs = this.databaseManager.getUtilisateurs();
+        //TODO: avoir aussi une liste avec seulement les utilisateurs actuellement connectés
         this.sessions = new ArrayList<>();
         this.inputServeur = new BufferedReader(new InputStreamReader(System.in));
 
@@ -132,12 +135,15 @@ public class Serveur implements CommandesServeur, CommandLineRunner{
         }
     }
 
-    public void redirigerMessage(Utilisateur utilisateur, Message message) {
-        for (Session session : this.sessions) {
-            if (session.getUtilisateur().getAbonnements().contains(utilisateur)) {
-                session.recevoirMessage(message);
-            }
-        }
+    /**
+     * Méthode qui vérifie si le pseudonyme est valide. Un pseudonyme est valide s'il
+     * ne contient pas de caractères spéciaux, s'il n'est pas vide et s'il fait moins
+     * de 100 caractères.
+     * @param pseudonyme
+     * @return true si pseudonyme valide, false sinon
+     */
+    public static boolean pseudonymeUtilisateurValide(String pseudonyme) {
+        return pseudonyme.matches("[a-zA-Z0-9]+") && pseudonyme.length() > 0 && pseudonyme.length() <= 100;
     }
 
     public void partagerPublication(Utilisateur utilisateur, Publication publication) {
@@ -156,11 +162,15 @@ public class Serveur implements CommandesServeur, CommandLineRunner{
         return this.databaseManager.findUtilisateurByPseudonyme(pseudonyme);
     }
 
+    public boolean UtilisateurExiste(String pseudonyme){
+        return this.databaseManager.findUtilisateurByPseudonyme(pseudonyme) != null;
+    }
+
     public List<Publication> getPublicationsUtilisateur(String pseudoUtilisateur) {
         return this.databaseManager.getPublicationsByUtilisateurPseudo(pseudoUtilisateur);
     }
 
-    public List<Publication> getPublicationsUtilisateur(Utilisateur utilisateur){
+    public Set<Publication> getPublicationsUtilisateur(Utilisateur utilisateur){
         return this.databaseManager.getPublicationsUtilisateur(utilisateur);
     }
 
@@ -175,12 +185,23 @@ public class Serveur implements CommandesServeur, CommandLineRunner{
         return publication;
     }
 
+    public Utilisateur creerUtilisateur(String pseudo, String motDePasse) {
+
+        Utilisateur u = this.databaseManager.creerUtilisateur(pseudo, motDePasse);
+        System.out.println("Un utilisateur vient de créer un compte ! Pseudo : "+pseudo);
+        return u;
+    }
+
     public boolean utilisateurExiste(String pseudo) {
         return this.databaseManager.findUtilisateurByPseudonyme(pseudo) != null;
     }
 
     public boolean unfollowUtilisateur(String pseudoUtilisateur, String pseudoUtilisateurSuivi) {
         return this.databaseManager.unfollowUtilisateur(pseudoUtilisateur, pseudoUtilisateurSuivi);
+    }
+
+    public boolean unfollowUtilisateur(Utilisateur utilisateur, Utilisateur utilisateurSuivi) {
+        return this.databaseManager.unfollowUtilisateur(utilisateur, utilisateurSuivi);
     }
 
     public boolean suivreUtilisateur(String pseudoUtilisateur, String pseudoUtilisateurASuivre ){
@@ -191,12 +212,8 @@ public class Serveur implements CommandesServeur, CommandLineRunner{
         return this.databaseManager.suivreUtilisateur(utilisateur, utilisateurASuivre);
     }
 
-    public Message likeMessage(String uuidMessage){
-        Message message = this.getMessage(uuidMessage);
-        if (message!=null){
-            message.likeMessage();
-        }
-        return message;
+    public List<Utilisateur> getListeSuggestionUtilisateurs(String pseudoUtilisateurAExclure, int limite){
+        return this.databaseManager.findRandomUtilisateurs(pseudoUtilisateurAExclure, limite);
     }
 
     public Publication utilisateurLikePublication(String pseudoUtilisateur, Long idPublication){
@@ -209,58 +226,26 @@ public class Serveur implements CommandesServeur, CommandLineRunner{
         System.out.println("Uptime : "+dateInitServ.until(dateFinServ, java.time.temporal.ChronoUnit.MINUTES));
     }
 
-
-    public Message getMessage(String uuidMessage) {
-        for (Utilisateur utilisateur : this.utilisateurs){
-                Message message =utilisateur.getMessage(uuidMessage);
-                if (message!=null) return message;
-            }
-        return null;
-    }
-
-    public boolean deletePublicationById(Long idPublication){
+    public boolean deletePublication(Long idPublication){
         return this.databaseManager.supprimerPublication(idPublication);
     }
 
     @Override
-    public void deleteMessage(String uuid) {
-       for ( Utilisateur utilisateur : this.utilisateurs){
-                Message message = utilisateur.getMessage(uuid);
-                if (message!=null) {
-                    utilisateur.supprimeMessage(message);
-                    System.out.println("Message supprimé");
-                };
-        }
-    }
-
-    @Override
-    public void deleteUtilisateur(String nomUtilisateur) {
-        for (Utilisateur utilisateur : this.utilisateurs){
-            if (utilisateur.getNom().equals(nomUtilisateur)){
-                    utilisateur.supprimeMessages();
-                    System.out.println("Messages de "+nomUtilisateur+" supprimés");
-                    this.utilisateurs.remove(utilisateur);
-                    System.out.println(nomUtilisateur+" supprimé");
-                    for (Session session : this.sessions){
-                        if (session.getUtilisateur().equals(utilisateur)){
-                            session.setUtilisateur(null);
-                            this.sessions.remove(session);
-                            System.out.println("Session de "+nomUtilisateur+" fermée");
-                            break;
-                        }
-                    }
-                    break;
-            }
-        }
+    public boolean deleteUtilisateur(String nomUtilisateur) {
+      return this.databaseManager.supprimerUtilisateur(nomUtilisateur);
     }
 
     public void afficheUtilisateurs(){
         System.out.println("----------------------------------------------");
         System.out.println("Utilisateurs :");
         for (Utilisateur utilisateur : this.utilisateurs){
-            utilisateur.afficheUtilisateur();
+            utilisateur.affichageUtilisateurSimple();
         }
         System.out.println("----------------------------------------------");
+    }
+
+    public void afficheUtilisateursConnectes(){
+        //TODO: afficher les utilisateurs connectés
     }
 
     public void afficheCommandesServeur(){

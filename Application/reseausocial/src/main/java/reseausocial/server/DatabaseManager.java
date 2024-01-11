@@ -29,16 +29,16 @@ public class DatabaseManager  {
         return utilisateurService.findByPseudonyme(pseudo);
     }
 
-    public void creerUtilisateur(String pseudonyme, String motDePasse) {
-        utilisateurService.creerUtilisateur(pseudonyme, motDePasse);
-    }
-
     public void supprimerUtilisateur(long id) {
         utilisateurService.supprimerUtilisateur(id);
     }
 
-    public void supprimerUtilisateur(String nom) {
-        utilisateurService.supprimerUtilisateur(nom);
+    public boolean supprimerUtilisateur(String pseudonyme) {
+        if (utilisateurService.findByPseudonyme(pseudonyme) != null){
+            utilisateurService.supprimerUtilisateur(pseudonyme);
+            return true;
+        }
+        return false;
     }
 
     public List<Utilisateur> getUtilisateurs() {
@@ -59,6 +59,10 @@ public class DatabaseManager  {
         return publi;
     }
 
+    public Utilisateur creerUtilisateur(String pseudonyme, String motDePasse) {
+        return utilisateurService.creerUtilisateur(pseudonyme, motDePasse);
+    }
+
     public boolean unfollowUtilisateur(String pseudoUtilisateur, String pseudoUtilisateurSuivi) {
         Utilisateur utilisateur = utilisateurService.findByPseudonyme(pseudoUtilisateur);
         Utilisateur utilisateurSuivi = utilisateurService.findByPseudonyme(pseudoUtilisateurSuivi);
@@ -69,6 +73,10 @@ public class DatabaseManager  {
             }
         }
         return false;
+    }
+
+    public boolean unfollowUtilisateur(Utilisateur utilisateur, Utilisateur utilisateurSuivi) {
+        return this.utilisateurService.unfollowUtilisateur(utilisateur, utilisateurSuivi);
     }
 
     public boolean suivreUtilisateur(String pseudoUtilisateur, String pseudoUtilisateurASuivre) {
@@ -129,6 +137,10 @@ public class DatabaseManager  {
 
     public Set<Publication> getPublicationsUtilisateur(Utilisateur utilisateur) {
         return utilisateur.getPublications();
+    }
+
+    public List<Utilisateur> findRandomUtilisateurs(String pseudonymeUtilisateurExclu, int limite) {
+        return utilisateurService.findRandomUtilisateurs(pseudonymeUtilisateurExclu, limite);
     }
 
 }

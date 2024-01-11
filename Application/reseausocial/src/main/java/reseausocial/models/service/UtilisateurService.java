@@ -10,7 +10,7 @@ import reseausocial.models.entity.Utilisateur;
 @Service
 public interface UtilisateurService {
 
-    public void creerUtilisateur(String pseudonyme, String motDePasse);
+    public Utilisateur creerUtilisateur(String pseudonyme, String motDePasse);
 
     public void creerUtilisateur(Utilisateur utilisateur);
 
@@ -24,6 +24,8 @@ public interface UtilisateurService {
 
     public Utilisateur findByPseudonyme(String pseudonyme);
 
+    public boolean unfollowUtilisateur(Utilisateur utilisateur, Utilisateur utilisateurSuivi);
+
     public boolean suivreUtilisateur(Utilisateur utilisateur, Utilisateur utilisateurSuivi);
 
     public List<Utilisateur> findAll();
@@ -34,4 +36,5 @@ public interface UtilisateurService {
 
     public void ajoutePublicationLikee(String pseudoUtilisateur, Publication publication);
     
+    public List<Utilisateur> findRandomUtilisateurs(String pseudonyme, int limite);
 }

@@ -7,6 +7,7 @@ import java.util.Set;
 import java.time.LocalDateTime;
 
 import org.hibernate.annotations.ColumnDefault;
+import org.hibernate.annotations.FetchProfile.FetchOverride;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -68,6 +69,18 @@ public class Publication {
                 "  \"nbLikes\": " + this.getNbLikes() + "\n" +
                 "}";
     }
+
+    @Override
+    public boolean equals(Object o) {
+        if (o == this)
+            return true;
+        if (!(o instanceof Publication)) {
+            return false;
+        }
+        Publication publication = (Publication) o;
+        return id == publication.id;
+    }
+
 
     /**
      * Méthode qui affiche la publication, sous la forme d'un JSON

@@ -14,6 +14,7 @@ public class ServeurRequeteHandler extends Thread {
             this.inputServeur = inputServeur;
         }
     
+        //TODO:  tout a modifier 
         @Override
         public void run() {
             try {
@@ -26,8 +27,14 @@ public class ServeurRequeteHandler extends Thread {
                             System.out.println(requete);
                             System.out.println(requete.split(" ", 2)[0]);
                             System.out.println(requete.split(" ", 2)[1]);
-                            String uuidMessage = requete.split(" ", 2)[1];
-                            this.serveur.deleteMessage(uuidMessage);
+                            String idPublication = requete.split(" ", 2)[1];
+                            Long idPublicationLong = Long.parseLong(idPublication);
+                            //TODO: gérer les exceptions de ParseLong partout ( meme dans Session.java )
+                            if (this.serveur.deletePublication(idPublicationLong)){
+                                System.out.println("Publication supprimée avec succès.");
+                            } else {
+                                System.out.println("Aucune publication n'existe avec cet ID");
+                            }
                             break;
                         case "/remove":
                             if (Session.warningContenuManquant(requete)) break;

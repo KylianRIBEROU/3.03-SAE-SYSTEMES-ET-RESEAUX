@@ -75,4 +75,20 @@ public class Utilisateur {
             "}";
     }
 
+    public void affichageInformationsUtilisateur(){
+        System.out.println(this.toString()) ;
+    }
+
+    public void affichageUtilisateurSimple(){
+        System.out.println("Utilisateur: " + this.pseudonyme+", nbAbo: "+this.abonnes.size()+", nbAbonnements: "+this.abonnements.size()+", nbP: "+this.publications.size());
+    }
+
+    @Override
+    public boolean equals(Object o){
+        if(o == this) return true;
+        if(!(o instanceof Utilisateur)) return false;
+        Utilisateur u = (Utilisateur) o;
+        return this.pseudonyme.equals(u.pseudonyme);
+    }
+
 }
