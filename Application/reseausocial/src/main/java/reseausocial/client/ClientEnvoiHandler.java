@@ -20,10 +20,11 @@ public class ClientEnvoiHandler extends Thread {
                         break;
                     }
                     client.getOutput().println(commande); 
-                    Thread.sleep(400); // pour éviter flood 
+                    Thread.sleep(300); // pour éviter flood 
                 }
 
             } catch (Exception e) {
+                e.printStackTrace();
                 System.out.println("Problème d'envoi de message au serveur");
             }
         }

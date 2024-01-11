@@ -75,7 +75,7 @@
                         <goal>java</goal>
                     </goals>
                     <configuration>
-                        <mainClass>reseausocial.server.Serveur</mainClass>
+                        <mainClass>reseausocial.Serveur</mainClass>
                     </configuration>
                 </execution>
                 <execution>

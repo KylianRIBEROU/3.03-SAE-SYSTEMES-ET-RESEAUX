@@ -2,8 +2,8 @@ package reseausocial.server;
 
 public interface CommandesServeur {
     
-    public void deleteMessage(String uuid);
+    public boolean deletePublication(Long idPublication);
 
-    public void deleteUtilisateur(String nomUtilisateur);
+    public boolean deleteUtilisateur(String nomUtilisateur);
 
 }
