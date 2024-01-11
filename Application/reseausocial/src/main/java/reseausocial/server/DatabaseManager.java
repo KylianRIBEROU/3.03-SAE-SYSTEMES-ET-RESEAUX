@@ -53,7 +53,7 @@ public class DatabaseManager  {
         return false;
     }
 
-    public Publication creerPublication(String contenu, String pseudonymeAuteur){
+    public Publication creerPublication(String pseudonymeAuteur, String contenu){
         Publication publi = publicationService.creerPublication(contenu, pseudonymeAuteur);
         utilisateurService.ajoutePublication(pseudonymeAuteur, publi);
         return publi;

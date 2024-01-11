@@ -95,7 +95,7 @@ public class PublicationServiceImpl implements PublicationService {
         return publicationRepository.findAll();
     }
 
-    // @Transactional ? 
+    @Transactional 
     @Override
     public void ajouteLikePublication(long idPublication) {
         Publication publication = publicationRepository.findPublicationById(idPublication);
@@ -104,6 +104,7 @@ public class PublicationServiceImpl implements PublicationService {
     }
 
     @Override
+    @Transactional
     public void ajouteLikePublication(Publication publication) {
         publication.setNbLikes(publication.getNbLikes() + 1);
         publicationRepository.save(publication);

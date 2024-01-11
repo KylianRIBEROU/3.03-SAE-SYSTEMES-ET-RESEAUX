@@ -8,6 +8,7 @@ import java.net.Socket;
 import java.net.SocketException;
 import java.util.List;
 import java.util.Set;
+
 import lombok.Setter;
 import reseausocial.Serveur;
 
@@ -47,12 +48,14 @@ public class Session implements Runnable {
     public void run() {
         try {
             this.utilisateur =  traiterRequeteConnexion();
+            System.out.println(utilisateur);
             if (this.utilisateur == null){
                 fermerSession();
                 return; //TODO : check ca et enelver celui a la fin du while
             }
             this.pseudoUtilConnecte = this.utilisateur.getPseudonyme();
             output.println(String.format("Connexion réussie. Bienvenue %s !", this.pseudoUtilConnecte));
+            output.println("Tapez /help pour afficher la liste des commandes disponibles");
 
             String clientMessage;
             while ((clientMessage = input.readLine()) != null) {
@@ -62,14 +65,14 @@ public class Session implements Runnable {
                     case "/post":
                         if (warningContenuManquant(clientMessage, output)) break;
                         String contenu = clientMessage.split(" ", 2)[1];
-                        Publication publi = this.creerPublication(pseudoUtilConnecte, contenu);
+                        Publication publi = this.serveur.creerPublication(pseudoUtilConnecte, contenu);
                         output.println("Publication postée : " + publi.toString());
-                        serveur.partagerPublication(utilisateur, publi);
+                        this.serveur.partagerPublication(utilisateur, publi);
                         break;
                     
                     case "/show-my-posts":
                         output.println("Liste de vos publications postées :");
-                        Set<Publication> publications = this.utilisateur.getPublications();
+                        Set<Publication> publications = this.utilisateur.getPublications(); // TODO: fix.
                         if (publications.isEmpty()) {
                             output.println("Vous n'avez posté aucunes publications ! Utilisez la commande /post pour en poster une");
                         }
@@ -181,7 +184,12 @@ public class Session implements Runnable {
             fermerSession();
         }
         catch (SocketException e){
-            System.out.println("Session de "+ pseudoUtilConnecte + " interrompue");
+            if (pseudoUtilConnecte.equals("N/A")){
+                System.out.println("Session d'un utilisateur en cours de connexion interrompue");
+            }
+            else{
+                System.out.println("Session de "+ pseudoUtilConnecte + " interrompue");
+            }
         }
         catch (IOException e) {
             e.printStackTrace();
@@ -210,13 +218,6 @@ public class Session implements Runnable {
         output.println("----------------------------------------------");
     }
 
-    // public void recevoirMessage(Message message) {
-    //     output.println("-------------------------------------");
-    //     output.println("Message posté par une personne que vous suivez");
-    //     output.println(message.toString());
-    //     output.println("-------------------------------------");
-    // }
-    
     public void recevoirPublication(Publication publication){
         output.println("-------------------------------------");
         output.println("Publication postée par une personne que vous suivez");
@@ -224,14 +225,11 @@ public class Session implements Runnable {
         output.println("-------------------------------------");
     }
 
-    public Publication creerPublication(String pseudoAuteur, String contenu){
-        return this.serveur.creerPublication(pseudoAuteur, contenu);
-    }
 
     private Utilisateur traiterRequeteConnexion() throws IOException{
         // recevoir nom utilisateur rentre par client
 
-        output.println("Vous êtes connecté au serveur sur l'ip " + this.clientSocket.getInetAddress() + ", port " + this.clientSocket.getPort()+" !");
+        output.println("Vous êtes connecté au serveur sur l'ip " + this.clientSocket.getInetAddress() + ", port " + Constantes.PORT+" !");
         afficherOptionsDeConnexion();
     
         String requeteClient;

@@ -25,19 +25,17 @@ public class Client {
     private Console inputMotDePasseClient;
 
     public static void main(String[] args) {
-        if (args.length < 2) {
+        if (args.length < 1) {
             System.out.println(args);
-            System.out.println("Usage: java Client <nom_serveur> <nom_utilisateur>");
-            System.out.println("Exemple: java Client localhost SNIVEAU");
+            System.out.println("Usage: java Client <nom_serveur>");
+            System.out.println("Exemple: java Client localhost");;
             System.exit(1);
         }
 
         String host = args[0];
-        String user = args[1];
 
         Client client = new Client(host, Constantes.PORT);
-
-        client.client(user);
+        client.client();
     }
 
    // https://stackoverflow.com/questions/41409670/is-socket-close-considered-a-clean-way-to-end-the-connection
@@ -60,7 +58,7 @@ public class Client {
 
     }
 
-    private void client(String pseudonymeUtilisateur) {
+    private void client() {
 
          try {
            
@@ -70,7 +68,6 @@ public class Client {
             ClientEnvoiHandler envoiMsgServHandler = new ClientEnvoiHandler(this);
             envoiMsgServHandler.start(); // envoi message serveur threadis
             
-           // traiterRequeteConnexion(pseudonymeUtilisateur);
 
 //             //TODO:  apres s'etre connecté ou créé compte Il voit ensuite la liste des différents messages postés par les utilisateurs
 // auxquels il est abonné, dans l’ordre chronologique (une limite du nombre de messages affichés
@@ -85,41 +82,6 @@ public class Client {
         }
     }
 
-    // private void traiterRequeteConnexion(String pseudonyme) throws IOException {
-    //         output.println(pseudonyme);
-    //         String serverResponse = input.readLine();
-
-    //         // Si le serveur propose la création d'un compte
-    //         while (serverResponse.contains("notregistered")) {
-    //             System.out.println(input.readLine());
-    //             System.out.println(input.readLine());
-    //             System.out.print("> ");
-    //             String reponse = inputClient.readLine();
-
-    //             output.println(reponse);
-
-    //             // Si le client souhaite créer un compte avec ce nom
-    //             if (!reponse.equalsIgnoreCase("y") && !reponse.equalsIgnoreCase("yes")) {
-                    
-    //                 System.out.println(input.readLine());
-    //                 System.out.print("> ");
-    //                 pseudonyme = inputClient.readLine();
-    //                 output.println(pseudonyme);
-    //             }
-    //             else if (reponse.equalsIgnoreCase("y") || reponse.equalsIgnoreCase("yes")){
-    //                 serverResponse = input.readLine();
-    //                 break;
-    //             }
-    //             else {
-    //                 System.out.println("Choix invalide");
-    //                 System.exit(1);
-    //             }
-
-    //             serverResponse = input.readLine();
-    //         }
-
-    //         System.out.println(serverResponse);
-    // }
 
     private void fermetureClient() throws IOException{
             input.close();

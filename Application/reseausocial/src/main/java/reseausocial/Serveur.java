@@ -154,8 +154,8 @@ public class Serveur implements CommandesServeur, CommandLineRunner{
         return this.databaseManager.checkUtilisateurCredentials(pseudo, motDePasse);
     }
 
-    public Publication creerPublication(String contenu, String pseudoAuteur) {
-        Publication publication = this.databaseManager.creerPublication(contenu, pseudoAuteur);
+    public Publication creerPublication(String pseudoAuteur, String contenu) {
+        Publication publication = this.databaseManager.creerPublication(pseudoAuteur, contenu);
         Utilisateur auteur = this.databaseManager.findUtilisateurByPseudonyme(pseudoAuteur);
         this.partagerPublication(auteur, publication);
         return publication;
@@ -227,8 +227,9 @@ public class Serveur implements CommandesServeur, CommandLineRunner{
     public void afficheCommandesServeur(){
         System.out.println("----------------------------------------------");
         System.out.println("Commandes serveur ( administrateur ) :");
-        System.out.println("/delete <uuid> : supprime le message correspondant à l'uuid");
-        System.out.println("/remove <nomUtilisateur> : supprime l'utilisateur et ses messages");
+        System.out.println("/show-all-users : affiche tous les utilisateurs");
+        System.out.println("/delete <id_publication> : supprime la publication avec l'id spécifié");
+        System.out.println("/remove <nomUtilisateur> : supprime l'utilisateur et ses publications");
         System.out.println("/help : affiche les commandes serveur");
         System.out.println("----------------------------------------------");
     }
