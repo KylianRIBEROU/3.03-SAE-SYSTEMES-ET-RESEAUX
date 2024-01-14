@@ -111,6 +111,7 @@ public class PublicationServiceImpl implements PublicationService {
     }
 
     @Override
+    @Transactional
     public void ajouteUtilisateurAyantLike(Publication publication, String pseudonymeUtilisateur) {
         publication.getUtilisateursQuiOntLike().add(utilisateurService.findByPseudonyme(pseudonymeUtilisateur));
         publicationRepository.save(publication);

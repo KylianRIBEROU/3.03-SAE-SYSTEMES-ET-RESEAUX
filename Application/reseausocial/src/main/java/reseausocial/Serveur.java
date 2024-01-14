@@ -161,6 +161,12 @@ public class Serveur implements CommandesServeur, CommandLineRunner{
         return publication;
     }
 
+    public Publication creerPublication(Utilisateur auteur, String contenu) {
+        Publication publication = this.databaseManager.creerPublication(auteur, contenu);
+        this.partagerPublication(auteur, publication);
+        return publication;
+    }
+
     public Utilisateur creerUtilisateur(String pseudo, String motDePasse) {
 
         Utilisateur u = this.databaseManager.creerUtilisateur(pseudo, motDePasse);
@@ -192,7 +198,7 @@ public class Serveur implements CommandesServeur, CommandLineRunner{
         return this.databaseManager.findRandomUtilisateurs(pseudoUtilisateurAExclure, limite);
     }
 
-    public Publication utilisateurLikePublication(String pseudoUtilisateur, Long idPublication){
+    public boolean utilisateurLikePublication(String pseudoUtilisateur, Long idPublication){
         return this.databaseManager.utilisateurLikePublication(pseudoUtilisateur, idPublication); 
     }
 
@@ -204,6 +210,10 @@ public class Serveur implements CommandesServeur, CommandLineRunner{
 
     public boolean deletePublication(Long idPublication){
         return this.databaseManager.supprimerPublication(idPublication);
+    }
+
+    public boolean deletePublication(Long idPublication, String pseudoUtilisateur){
+        return this.databaseManager.supprimerPublication(idPublication, pseudoUtilisateur);
     }
 
     @Override

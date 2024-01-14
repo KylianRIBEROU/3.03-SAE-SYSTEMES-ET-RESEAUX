@@ -7,7 +7,6 @@ import java.util.Set;
 import java.time.LocalDateTime;
 
 import org.hibernate.annotations.ColumnDefault;
-import org.hibernate.annotations.FetchProfile.FetchOverride;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -52,7 +51,7 @@ public class Publication {
         this.dateheure = LocalDateTime.now();
     }
 
-    @ManyToMany(mappedBy = "publicationsLikees")
+    @ManyToMany(mappedBy = "publicationsLikees", fetch = FetchType.EAGER)
     @Builder.Default
     private Set<Utilisateur> utilisateursQuiOntLike = new HashSet<>();
 

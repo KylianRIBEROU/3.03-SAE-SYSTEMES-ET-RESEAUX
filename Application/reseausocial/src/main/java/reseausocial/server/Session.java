@@ -55,6 +55,7 @@ public class Session implements Runnable {
             }
             this.pseudoUtilConnecte = this.utilisateur.getPseudonyme();
             output.println(String.format("Connexion réussie. Bienvenue %s !", this.pseudoUtilConnecte));
+            afficherSuggestionsAbonnements();
             output.println("Tapez /help pour afficher la liste des commandes disponibles");
 
             String clientMessage;
@@ -72,7 +73,7 @@ public class Session implements Runnable {
                     
                     case "/show-my-posts":
                         output.println("Liste de vos publications postées :");
-                        Set<Publication> publications = this.utilisateur.getPublications(); // TODO: fix.
+                        List<Publication> publications = this.serveur.getPublicationsUtilisateur(pseudoUtilConnecte);
                         if (publications.isEmpty()) {
                             output.println("Vous n'avez posté aucunes publications ! Utilisez la commande /post pour en poster une");
                         }
@@ -91,7 +92,7 @@ public class Session implements Runnable {
                             output.println("Liste des messages de " + pseudoUtil + " :");
                             Set<Publication> publicationsUtilisateur = utilisateur.getPublications();
                             if (publicationsUtilisateur.isEmpty()) {
-                                output.println("Cet utilisateur n'a posté aucun message");
+                                output.println("Cet utilisateur n'a posté aucune publication");
                             }
                             for (Publication p : publicationsUtilisateur) {
                                 output.println(p.toString());
@@ -119,8 +120,12 @@ public class Session implements Runnable {
                         if (publiLike == null) {
                             output.println("Aucun message avec l'id '" + idPubli + "' n'existe sur le serveur");
                         } else {
-                            this.serveur.utilisateurLikePublication(pseudoUtilConnecte, idPubliLong); //TODO: check que utilisateur a pas deja liken de la base de
-                            output.println("Message liké avec succès ! ( id : " + idPubli + " )");
+                             if (this.serveur.utilisateurLikePublication(pseudoUtilConnecte, idPubliLong)){
+                                output.println("Message liké avec succès ! ( id : " + idPubli + " )");
+                             }
+                             else{
+                                output.println("Vous avez déjà liké ce message ! ( id : " + idPubli + " )");
+                             }
                         }
                         break;
 
@@ -128,7 +133,7 @@ public class Session implements Runnable {
                         if (warningContenuManquant(clientMessage, output)) break;
                         String idMessageADelete = clientMessage.split(" ", 2)[1];
                         Long idPubliADeleteLong = Long.parseLong(idMessageADelete);
-                        if (this.serveur.deletePublication(idPubliADeleteLong)) {
+                        if (this.serveur.deletePublication(idPubliADeleteLong, this.pseudoUtilConnecte)) {
                             output.println("Message supprimé avec succès ! ( id : " + idMessageADelete + " )");
                         } else {
                             output.println("Vous n'avez posté aucun message avec cet ID.");
@@ -317,7 +322,7 @@ public class Session implements Runnable {
      * Méthode qui affiche une liste d'utilisateurs que l'utilisateur pourrait suivre
      */
     public void afficherSuggestionsAbonnements(){
-        output.println("Vous venez de créer un compte ! Voici une liste d'utilisateurs que vous pourriez suivre :");
+        output.println("Voici une liste d'utilisateurs que vous pourriez suivre :");
         List<Utilisateur> utilisateursSuggeres = this.serveur.getListeSuggestionUtilisateurs(this.utilisateur.getPseudonyme(), Constantes.LIMITE_NB_UTILISATEURS_SUGGERES);
         if (utilisateursSuggeres.isEmpty()){
             output.println("Aucun utilisateur à suivre pour le moment");

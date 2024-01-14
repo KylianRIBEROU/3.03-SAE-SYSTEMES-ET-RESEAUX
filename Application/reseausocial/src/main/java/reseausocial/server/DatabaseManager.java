@@ -59,6 +59,12 @@ public class DatabaseManager  {
         return publi;
     }
 
+    public Publication creerPublication(Utilisateur auteur, String contenu){
+        Publication publi = publicationService.creerPublication(contenu, auteur);
+        utilisateurService.ajoutePublication(auteur, publi);
+        return publi;
+    }
+
     public Utilisateur creerUtilisateur(String pseudonyme, String motDePasse) {
         return utilisateurService.creerUtilisateur(pseudonyme, motDePasse);
     }
@@ -111,6 +117,20 @@ public class DatabaseManager  {
         return false;
     }
 
+    public boolean supprimerPublication(long id, String pseudoUtilisateur) {
+        Utilisateur utilisateur = utilisateurService.findByPseudonyme(pseudoUtilisateur);
+        if (utilisateur != null) {
+            Publication publication = publicationService.findById(id);
+            if (publication != null) {
+                if (publication.getAuteur().equals(utilisateur)) {
+                    publicationService.supprimerPublication(id);
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
+
     public void supprimerPublicationsUtilisateur(Utilisateur utilisateur) {
         publicationService.supprimerPublicationsDunUtilisateur(utilisateur);
     }
@@ -119,17 +139,22 @@ public class DatabaseManager  {
         return publicationService.findAll();
     }
 
-    public Publication utilisateurLikePublication(String pseudoUtilisateur, Long idPublication) {
+    public boolean utilisateurLikePublication(String pseudoUtilisateur, Long idPublication) {
         Publication publication = publicationService.findById(idPublication);
-
         if (publication != null) {
-        
-        publicationService.ajouteLikePublication(publication);
-        publicationService.ajouteUtilisateurAyantLike(publication, pseudoUtilisateur);
-        utilisateurService.ajoutePublicationLikee(pseudoUtilisateur, publication);
+            if (publication.getUtilisateursQuiOntLike().contains(utilisateurService.findByPseudonyme(pseudoUtilisateur))) {
+                return false;
+            }
+            else {
+                publicationService.ajouteLikePublication(publication);
+                publicationService.ajouteUtilisateurAyantLike(publication, pseudoUtilisateur);
+                utilisateurService.ajoutePublicationLikee(pseudoUtilisateur, publication);
+                return true;
+            }
         }
-        return publication;
+        return false;
     }
+
 
     public List<Publication> getPublicationsByUtilisateurPseudo(String pseudoUtilisateur) {
         return publicationService.findByAuteurPseudonyme(pseudoUtilisateur);

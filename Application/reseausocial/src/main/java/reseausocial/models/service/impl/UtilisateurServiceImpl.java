@@ -1,6 +1,7 @@
 package reseausocial.models.service.impl;
 
 import java.util.List;
+import java.util.Set;
 
 import javax.transaction.Transactional;
 
@@ -110,6 +111,11 @@ public class UtilisateurServiceImpl implements UtilisateurService{
     @Override
     public List<Utilisateur> findRandomUtilisateurs(String pseudonyme, int limite) {
         return utilisateurRepository.findRandomUtilisateurs(pseudonyme, limite);
+    }
+
+    @Override
+    public Set<Utilisateur> findUtilisateursAyantLike(long idPublication) {
+        return utilisateurRepository.findUtilisateursAyantLike(idPublication);
     }
 
 }
