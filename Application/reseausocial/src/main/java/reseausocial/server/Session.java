@@ -48,7 +48,6 @@ public class Session implements Runnable {
     public void run() {
         try {
             this.utilisateur =  traiterRequeteConnexion();
-            System.out.println(utilisateur);
             if (this.utilisateur == null){
                 fermerSession();
                 return; //TODO : check ca et enelver celui a la fin du while
@@ -68,17 +67,19 @@ public class Session implements Runnable {
                         String contenu = clientMessage.split(" ", 2)[1];
                         Publication publi = this.serveur.creerPublication(pseudoUtilConnecte, contenu);
                         output.println("Publication postée : " + publi.toString());
-                        this.serveur.partagerPublication(utilisateur, publi);
+                        this.serveur.partagerPublication(this.pseudoUtilConnecte, publi);
                         break;
                     
                     case "/show-my-posts":
-                        output.println("Liste de vos publications postées :");
                         List<Publication> publications = this.serveur.getPublicationsUtilisateur(pseudoUtilConnecte);
                         if (publications.isEmpty()) {
                             output.println("Vous n'avez posté aucunes publications ! Utilisez la commande /post pour en poster une");
                         }
-                        for (Publication pub : publications) {
-                            output.println(pub.toString());
+                        else {
+                            output.println("Liste de vos publications postées :");
+                            for (Publication pub : publications) {
+                                output.println(pub.toString());
+                            }
                         }
                         break;
 
@@ -143,15 +144,23 @@ public class Session implements Runnable {
                     case "/follow":
                         if (warningContenuManquant(clientMessage, output)) break;
                         String nomUtilisateur = clientMessage.split(" ", 2)[1];
+                        if (nomUtilisateur.equals(this.pseudoUtilConnecte)){
+                            output.println("Vous ne pouvez pas vous suivre vous même");
+                            break;
+                        }
                         Utilisateur utilisateurASuivre = this.serveur.getUtilisateurByPseudo(nomUtilisateur);
                         if (utilisateurASuivre == null) {
                             output.println("L'utilisateur " + nomUtilisateur + " n'existe pas");
                         } else {
-                            if (!this.serveur.suivreUtilisateur(this.utilisateur, utilisateurASuivre)){
+                            boolean suivre = this.serveur.suivreUtilisateur(this.pseudoUtilConnecte, utilisateurASuivre.getPseudonyme());
+                            System.out.println(suivre);
+                            if (!suivre){
                                 output.println("Vous suivez déjà " + nomUtilisateur);
                                 break;
                             }
+                            else {
                             output.println("Vous suivez maintenant " + nomUtilisateur);
+                            }
                         }
                         break;
                     
@@ -160,9 +169,9 @@ public class Session implements Runnable {
                         String nomUtilisateurAUnfollow = clientMessage.split(" ", 2)[1];
                         Utilisateur utilisateurUnfollow = this.serveur.getUtilisateurByPseudo(nomUtilisateurAUnfollow);
                         if (utilisateurUnfollow == null) {
-                            output.println("L'utilisateur à unfollow '" + nomUtilisateurAUnfollow + "' n'existe pas");
+                            output.println("L'utilisateur à unfollow '" + nomUtilisateurAUnfollow + "' n'existe pas");//TODo: changer comme pour le follow
                         } else {
-                           if (this.serveur.unfollowUtilisateur(this.utilisateur, utilisateurUnfollow)){
+                           if (this.serveur.unfollowUtilisateur(this.utilisateur, utilisateurUnfollow)){ //TODO: fix
                                 output.println("Vous ne suivez plus " + nomUtilisateurAUnfollow);
                            }
                             else{
@@ -171,6 +180,31 @@ public class Session implements Runnable {
                         }
                         break;
 
+                    case "/followers":
+                        output.println("-------------------------------------");
+                        output.println("Liste de vos abonnés :");
+                        Set<Utilisateur> abonnes = this.serveur.getAbonnesUtilisateur(this.pseudoUtilConnecte);
+                        if (abonnes.isEmpty()) {
+                            output.println(" /!\\ Vous n'avez aucun abonné");
+                        }
+                        for (Utilisateur abonne : abonnes) {
+                            output.println(abonne.toString());
+                        }
+                        output.println("-------------------------------------");
+                        break;
+
+                    case "/following":
+                        output.println("-------------------------------------");
+                        output.println("Liste des utilisateurs que vous suivez :");
+                        Set<Utilisateur> abonnements = this.serveur.getAbonnementsUtilisateur(this.pseudoUtilConnecte);
+                        if (abonnements.isEmpty()) {
+                            output.println("/!\\ Vous ne suivez aucun utilisateur");
+                        }
+                        for (Utilisateur abonnement : abonnements) {
+                            output.println(abonnement.toString());
+                        }
+                        output.println("-------------------------------------");
+                        break;
                     case "/help":
                         afficherMenuAideClient(output);
                         break;
@@ -197,7 +231,7 @@ public class Session implements Runnable {
             }
         }
         catch (IOException e) {
-            e.printStackTrace();
+            System.out.println("Flux de donnée d'un utilisateur en cours de connexion interrompu");
         }
         catch (InterruptedException e) {
             e.printStackTrace();
@@ -217,6 +251,8 @@ public class Session implements Runnable {
         output.println("/show <id_publication> : afficher une publication");
         output.println("/like <id_publication> : liker une publication");
         output.println("/delete <id_publication> : supprimer une de vos publications");
+        output.println("/followers : afficher la liste de vos abonnés");
+        output.println("/following : afficher la liste des utilisateurs que vous suivez");
         output.println("/follow <nom_utilisateur> : suivre un utilisateur");
         output.println("/unfollow <nom_utilisateur> : ne plus suivre un utilisateur");
         output.println("/help : afficher la liste des commandes disponibles");
@@ -322,6 +358,7 @@ public class Session implements Runnable {
      * Méthode qui affiche une liste d'utilisateurs que l'utilisateur pourrait suivre
      */
     public void afficherSuggestionsAbonnements(){
+        output.println("--------------------------------------------------");
         output.println("Voici une liste d'utilisateurs que vous pourriez suivre :");
         List<Utilisateur> utilisateursSuggeres = this.serveur.getListeSuggestionUtilisateurs(this.utilisateur.getPseudonyme(), Constantes.LIMITE_NB_UTILISATEURS_SUGGERES);
         if (utilisateursSuggeres.isEmpty()){
@@ -332,6 +369,7 @@ public class Session implements Runnable {
                 output.println(util.toString());
             }
         }
+        output.println("--------------------------------------------------");
     }
 
     /**

@@ -7,7 +7,6 @@ import reseausocial.models.entity.Publication;
 import reseausocial.models.entity.Utilisateur;
 
 import java.time.LocalDateTime;
-import java.util.Set;
 
 import javax.transaction.Transactional;
 
@@ -76,6 +75,8 @@ public class PublicationServiceImpl implements PublicationService {
     @Override
     @Transactional
     public void supprimerPublication(long id) {
+        Publication publication = publicationRepository.findById(id);
+        utilisateurService.supprimerPublicationLikee(publication.getAuteur(), publication);
         publicationRepository.deleteById(id);
     }
 

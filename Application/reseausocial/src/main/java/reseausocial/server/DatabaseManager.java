@@ -72,13 +72,8 @@ public class DatabaseManager  {
     public boolean unfollowUtilisateur(String pseudoUtilisateur, String pseudoUtilisateurSuivi) {
         Utilisateur utilisateur = utilisateurService.findByPseudonyme(pseudoUtilisateur);
         Utilisateur utilisateurSuivi = utilisateurService.findByPseudonyme(pseudoUtilisateurSuivi);
-        if (utilisateur != null && utilisateurSuivi != null) {
-            if (utilisateur.getAbonnements().contains(utilisateurSuivi)) {
-                utilisateur.getAbonnements().remove(utilisateurSuivi);
-                return true;
-            }
-        }
-        return false;
+       
+        return utilisateurService.unfollowUtilisateur(utilisateur, utilisateurSuivi);
     }
 
     public boolean unfollowUtilisateur(Utilisateur utilisateur, Utilisateur utilisateurSuivi) {
@@ -88,16 +83,11 @@ public class DatabaseManager  {
     public boolean suivreUtilisateur(String pseudoUtilisateur, String pseudoUtilisateurASuivre) {
         Utilisateur utilisateur = utilisateurService.findByPseudonyme(pseudoUtilisateur);
         Utilisateur utilisateurSuivi = utilisateurService.findByPseudonyme(pseudoUtilisateurASuivre);
-        if (utilisateur != null && utilisateurSuivi != null) {
-            if (!utilisateur.getAbonnements().contains(utilisateurSuivi)) {
-                utilisateur.getAbonnements().add(utilisateurSuivi);
-                return true;
-            }
-        }
-        return false;
+    
+        return utilisateurService.suivreUtilisateur(utilisateur, utilisateurSuivi); 
     }
 
-    public boolean  suivreUtilisateur(Utilisateur utilisateur, Utilisateur utilisateurSuivi) {
+    public boolean suivreUtilisateur(Utilisateur utilisateur, Utilisateur utilisateurSuivi) {
         return this.utilisateurService.suivreUtilisateur(utilisateur, utilisateurSuivi);
     }
 
@@ -115,6 +105,22 @@ public class DatabaseManager  {
             return true;
         }
         return false;
+    }
+
+    public Set<Utilisateur> getAbonnesUtilisateur(String pseudoUtilisateur) {
+        Utilisateur utilisateur = utilisateurService.findByPseudonyme(pseudoUtilisateur);
+        if (utilisateur != null) {
+            return utilisateur.getAbonnes();
+        }
+        return null;
+    }
+
+    public Set<Utilisateur> getAbonnementsUtilisateur(String pseudoUtilisateur) {
+        Utilisateur utilisateur = utilisateurService.findByPseudonyme(pseudoUtilisateur);
+        if (utilisateur != null) {
+            return utilisateur.getAbonnements();
+        }
+        return null;
     }
 
     public boolean supprimerPublication(long id, String pseudoUtilisateur) {
@@ -139,20 +145,19 @@ public class DatabaseManager  {
         return publicationService.findAll();
     }
 
+
     public boolean utilisateurLikePublication(String pseudoUtilisateur, Long idPublication) {
-        Publication publication = publicationService.findById(idPublication);
-        if (publication != null) {
-            if (publication.getUtilisateursQuiOntLike().contains(utilisateurService.findByPseudonyme(pseudoUtilisateur))) {
-                return false;
-            }
-            else {
-                publicationService.ajouteLikePublication(publication);
-                publicationService.ajouteUtilisateurAyantLike(publication, pseudoUtilisateur);
-                utilisateurService.ajoutePublicationLikee(pseudoUtilisateur, publication);
-                return true;
-            }
+        if (utilisateurService.utilisateurALikePublication(idPublication, pseudoUtilisateur)){
+            return false;
         }
-        return false;
+        else {
+            Publication publication = publicationService.findById(idPublication);
+
+            publicationService.ajouteLikePublication(publication);
+            publicationService.ajouteUtilisateurAyantLike(publication, pseudoUtilisateur);
+            utilisateurService.ajoutePublicationLikee(pseudoUtilisateur, publication);
+            return true;
+            }
     }
 
 

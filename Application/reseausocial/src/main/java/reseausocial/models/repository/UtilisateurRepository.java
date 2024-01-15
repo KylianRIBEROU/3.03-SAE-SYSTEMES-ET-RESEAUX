@@ -20,6 +20,14 @@ public interface UtilisateurRepository extends JpaRepository<Utilisateur, Long> 
 
     public void deleteById(long id);
 
+    // boolean, true si l'utilisateur 1 suit l'utilisateur 2, false sinon
+    @Query(value = "SELECT EXISTS(SELECT * FROM suivre WHERE utilisateur_id = ?1 AND abonne_id = ?2)", nativeQuery = true)
+    public int utilisateurSuitUtilisateur(long idUtilisateur1, long idUtilisateur2);
+
+    // boolean, true si l'utilisateur a deja liké la publication, false sinon
+    @Query(value = "SELECT EXISTS(SELECT * FROM utilisateur_like_publication WHERE utilisateur_id = ?1 AND publication_id = ?2)", nativeQuery = true)
+    public int utilisateurALikePublication(long idUtilisateur, long idPublication);
+
     // get utilisateurs qui ont liké une publication
     @Query(value = "SELECT * FROM utilisateur WHERE utilisateur_id IN (SELECT utilisateur_id FROM utilisateur_like_publication WHERE publication_id = ?1)", nativeQuery = true)
     public Set<Utilisateur> findUtilisateursAyantLike(long idPublication);

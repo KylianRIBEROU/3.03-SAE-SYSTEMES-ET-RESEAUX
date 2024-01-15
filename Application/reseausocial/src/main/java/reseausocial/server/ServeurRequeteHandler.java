@@ -14,7 +14,6 @@ public class ServeurRequeteHandler extends Thread {
             this.inputServeur = inputServeur;
         }
     
-        //TODO:  tout a modifier 
         @Override
         public void run() {
             try {

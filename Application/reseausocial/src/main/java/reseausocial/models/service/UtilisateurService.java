@@ -35,8 +35,12 @@ public interface UtilisateurService {
     public void ajoutePublication(Utilisateur utilisateur, Publication publication);
 
     public void ajoutePublicationLikee(String pseudoUtilisateur, Publication publication);
+
+    public void supprimerPublicationLikee(Utilisateur utilisateur, Publication publication);
     
     public List<Utilisateur> findRandomUtilisateurs(String pseudonyme, int limite);
 
     public Set<Utilisateur> findUtilisateursAyantLike(long idPublication);
+
+    public boolean utilisateurALikePublication(long idPublication, String pseudonymeUtilisateur);
 }
