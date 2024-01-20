@@ -36,6 +36,7 @@ public class DatabaseManager  {
     public boolean supprimerUtilisateur(String pseudonyme) {
         if (utilisateurService.findByPseudonyme(pseudonyme) != null){
             publicationService.supprimerPublicationsDunUtilisateur(this.utilisateurService.findByPseudonyme(pseudonyme));
+            utilisateurService.supprimerSuivreRelations(utilisateurService.findByPseudonyme(pseudonyme));
             utilisateurService.supprimerUtilisateur(pseudonyme);
             return true;
         }
@@ -171,4 +172,8 @@ public class DatabaseManager  {
         return utilisateurService.findRandomUtilisateurs(pseudonymeUtilisateurExclu, limite);
     }
 
+    public void supprimerSuivreRelations(String nomUtilisateur) {
+        Utilisateur utilisateur = utilisateurService.findByPseudonyme(nomUtilisateur);
+        utilisateurService.supprimerSuivreRelations(utilisateur);
+    }
 }

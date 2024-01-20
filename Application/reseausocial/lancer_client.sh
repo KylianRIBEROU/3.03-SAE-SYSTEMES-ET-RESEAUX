@@ -4,7 +4,7 @@
 # on verra pour demander un input à l'utilisateur si il n'a rien mis en paramètres d'entrée
 if [ $# -eq 0 ]
   then
-    echo "Entrez le nom du serveur ou son IP pour vous connecter."
+    echo "Entrez le nom du serveur ou son IP pour vous connecter. (exemple: localhost )"
     echo "Nom du serveur"
     read -p "> " arg1
     mvn clean install exec:java@run-client -Dexec.args="$arg1" -DskipTests=true

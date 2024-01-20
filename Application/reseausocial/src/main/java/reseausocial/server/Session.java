@@ -69,7 +69,6 @@ public class Session implements Runnable {
                         String contenu = clientMessage.split(" ", 2)[1];
                         Publication publi = this.serveur.creerPublication(pseudoUtilConnecte, contenu);
                         output.println("Publication postée : " + publi.toString());
-                        this.serveur.partagerPublication(this.pseudoUtilConnecte, publi);
                         break;
                     
                     case "/show-my-posts":
@@ -158,7 +157,6 @@ public class Session implements Runnable {
                             output.println("L'utilisateur " + nomUtilisateur + " n'existe pas");
                         } else {
                             boolean suivre = this.serveur.suivreUtilisateur(this.pseudoUtilConnecte, utilisateurASuivre.getPseudonyme());
-                            System.out.println(suivre);
                             if (!suivre){
                                 output.println("Vous suivez déjà " + nomUtilisateur);
                                 break;
@@ -262,7 +260,7 @@ public class Session implements Runnable {
         output.println("----------------------------------------------");
         output.println("Liste des commandes disponibles pour le client:");
         output.println("/post <contenu> : poster une publication");
-        output.println("/show-my-posts : afficher la liste des publicatiokns que vous avez postées");
+        output.println("/show-my-posts : afficher la liste des publications que vous avez postées");
         output.println("/show-all-posts <nom_utilisateur> : afficher la liste des publications postées par un utilisateur");
         output.println("/show <id_publication> : afficher une publication");
         output.println("/like <id_publication> : liker une publication");

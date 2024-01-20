@@ -36,6 +36,7 @@ public class ServeurRequeteHandler extends Thread {
                         case "/remove":
                             if (Session.warningContenuManquant(requete)) break;
                             String nomUtilisateur = requete.split(" ", 2)[1];
+                            this.serveur.supprimerSuivreRelations(nomUtilisateur);
                             if (this.serveur.deleteUtilisateur(nomUtilisateur)) {
                                 this.serveur.fermerSessionAvecNomUtilisateur(nomUtilisateur);
                                 System.out.println("Utilisateur supprimé avec succès.");

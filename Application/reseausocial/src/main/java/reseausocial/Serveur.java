@@ -226,6 +226,11 @@ public class Serveur implements CommandesServeur, CommandLineRunner{
       return this.databaseManager.supprimerUtilisateur(nomUtilisateur);
     }
 
+    public void supprimerSuivreRelations(String nomUtilisateur){
+        this.databaseManager.supprimerSuivreRelations(nomUtilisateur);
+    }
+
+
     public void afficheUtilisateurs(){
         List<Utilisateur> utilisateurs = this.databaseManager.getUtilisateurs();
         System.out.println("----------------------------------------------");
