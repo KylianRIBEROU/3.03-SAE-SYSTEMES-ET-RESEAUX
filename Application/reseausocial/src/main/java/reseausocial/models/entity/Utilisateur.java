@@ -9,6 +9,7 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 import java.util.HashSet;
+import java.util.Objects;
 import java.util.Set;
 
 @Getter
@@ -53,11 +54,11 @@ public class Utilisateur {
         inverseJoinColumns = @JoinColumn(name = "abonne_id")
     )
     @Builder.Default
-    private Set<Utilisateur> abonnes = new HashSet<>();
-
-    @ManyToMany(mappedBy = "abonnes", fetch = FetchType.EAGER)
-    @Builder.Default
     private Set<Utilisateur> abonnements = new HashSet<>();
+
+    @ManyToMany(mappedBy = "abonnements", fetch = FetchType.EAGER)
+    @Builder.Default
+    private Set<Utilisateur> abonnes = new HashSet<>();
 
 
     public Utilisateur(String pseudonyme, String motDePasse) {
@@ -70,8 +71,8 @@ public class Utilisateur {
         return "{" +
             "\"pseudonyme\":\"" + pseudonyme + "\"," +
             "\"nb abonnes\":\"" + this.abonnes.size() + "\"," +
-            "\"nb abonnements\":\"" + this.abonnements.size() + "\"," +
-            "\"nb publications\":\"" + this.publicationsLikees.size() + "\"" +
+            "\"nb abonnements\":\"" + this.abonnements.size() +
+             "\"" +
             "}";
     }
 
@@ -80,7 +81,7 @@ public class Utilisateur {
     }
 
     public void affichageUtilisateurSimple(){
-        System.out.println("Utilisateur: " + this.pseudonyme+", nbAbo: "+this.abonnes.size()+", nbAbonnements: "+this.abonnements.size()+", nbP: "+this.publications.size());
+        System.out.println("Utilisateur: " + this.pseudonyme+", nbAbo: "+this.abonnes.size()+", nbAbonnements: "+this.abonnements.size() +", nbP: "+this.publications.size());;
     }
 
     @Override
@@ -89,6 +90,11 @@ public class Utilisateur {
         if(!(o instanceof Utilisateur)) return false;
         Utilisateur u = (Utilisateur) o;
         return this.pseudonyme.equals(u.pseudonyme);
+    }
+
+    @Override
+    public int hashCode(){
+        return Objects.hash(this.pseudonyme);
     }
 
 }

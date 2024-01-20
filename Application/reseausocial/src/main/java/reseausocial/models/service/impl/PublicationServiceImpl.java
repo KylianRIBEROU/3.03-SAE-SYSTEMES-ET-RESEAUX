@@ -7,7 +7,6 @@ import reseausocial.models.entity.Publication;
 import reseausocial.models.entity.Utilisateur;
 
 import java.time.LocalDateTime;
-import java.util.Set;
 
 import javax.transaction.Transactional;
 
@@ -76,13 +75,24 @@ public class PublicationServiceImpl implements PublicationService {
     @Override
     @Transactional
     public void supprimerPublication(long id) {
+        Publication publication = publicationRepository.findById(id);
+        publication.getUtilisateursQuiOntLike().forEach(utilisateur -> utilisateurService.supprimerPublicationLikee(utilisateur, publication));
         publicationRepository.deleteById(id);
     }
 
     @Override
     @Transactional
+    public void supprimerPublication(Publication publication) {
+        publication.getUtilisateursQuiOntLike().forEach(utilisateur -> utilisateurService.supprimerPublicationLikee(utilisateur, publication));
+        publicationRepository.delete(publication);
+    }
+
+    @Override
+    @Transactional
     public void supprimerPublicationsDunUtilisateur(Utilisateur utilisateur) {
-        publicationRepository.deleteByAuteurId(utilisateur.getId());
+        for (Publication publication : utilisateur.getPublications()) {
+            this.supprimerPublication(publication);
+        }
     }
 
     @Override
@@ -95,7 +105,7 @@ public class PublicationServiceImpl implements PublicationService {
         return publicationRepository.findAll();
     }
 
-    // @Transactional ? 
+    @Transactional 
     @Override
     public void ajouteLikePublication(long idPublication) {
         Publication publication = publicationRepository.findPublicationById(idPublication);
@@ -104,12 +114,14 @@ public class PublicationServiceImpl implements PublicationService {
     }
 
     @Override
+    @Transactional
     public void ajouteLikePublication(Publication publication) {
         publication.setNbLikes(publication.getNbLikes() + 1);
         publicationRepository.save(publication);
     }
 
     @Override
+    @Transactional
     public void ajouteUtilisateurAyantLike(Publication publication, String pseudonymeUtilisateur) {
         publication.getUtilisateursQuiOntLike().add(utilisateurService.findByPseudonyme(pseudonymeUtilisateur));
         publicationRepository.save(publication);

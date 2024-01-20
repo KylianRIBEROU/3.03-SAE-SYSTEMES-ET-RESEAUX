@@ -1,6 +1,7 @@
 package reseausocial.models.service.impl;
 
 import java.util.List;
+import java.util.Set;
 
 import javax.transaction.Transactional;
 
@@ -84,32 +85,63 @@ public class UtilisateurServiceImpl implements UtilisateurService{
     }
 
     @Override
-    public boolean suivreUtilisateur(Utilisateur utilisateur, Utilisateur utilisateurSuivi) {
-        if (!utilisateur.getAbonnements().contains(utilisateurSuivi)) {
-            utilisateur.getAbonnements().add(utilisateurSuivi);
-            utilisateurRepository.save(utilisateur);
-            return true;
-        }
-        return false;
+    public void supprimerPublicationLikee(Utilisateur utilisateur, Publication publication) {
+        utilisateur.getPublicationsLikees().remove(publication);
+        utilisateurRepository.save(utilisateur);
     }
 
     @Override
-    public boolean unfollowUtilisateur(Utilisateur utilisateur, Utilisateur utilisateurSuivi) {
+    public boolean suivreUtilisateur(Utilisateur utilisateur, Utilisateur utilisateurSuivi) {
+     
         if (utilisateur.getAbonnements().contains(utilisateurSuivi)) {
-            utilisateur.getAbonnements().remove(utilisateurSuivi);
+            return false;
+        }
+     
+        utilisateur.getAbonnements().add(utilisateurSuivi);
+        utilisateurRepository.save(utilisateur);
+      
+        utilisateurSuivi.getAbonnes().add(utilisateur);
+        utilisateurRepository.save(utilisateurSuivi);
+        return true;
+   
+    }
+
+    @Override
+    public boolean unfollowUtilisateur(Utilisateur utilisateur, Utilisateur utilisateurAUnfollow) {
+      
+  
+
+        if (utilisateur.getAbonnements().contains(utilisateurAUnfollow)) {
+    
+            utilisateur.getAbonnements().remove(utilisateurAUnfollow);
+            utilisateurAUnfollow.getAbonnes().remove(utilisateur); // a vérifier, l'ajout des deux cotés est il nécessaire ?
             utilisateurRepository.save(utilisateur);
+            utilisateurRepository.save(utilisateurAUnfollow);
             return true;
         }
         return false;
     }
 
-    public void test(){
+    public boolean utilisateurSuitUtilisateur(Utilisateur utilisateur, Utilisateur utilisateurSuivi) {
+        return utilisateur.getAbonnements().contains(utilisateurSuivi);
     }
 
 
     @Override
     public List<Utilisateur> findRandomUtilisateurs(String pseudonyme, int limite) {
         return utilisateurRepository.findRandomUtilisateurs(pseudonyme, limite);
+    }
+
+    @Override
+    public Set<Utilisateur> findUtilisateursAyantLike(long idPublication) {
+        return utilisateurRepository.findUtilisateursAyantLike(idPublication);
+    }
+
+    @Override
+    public boolean utilisateurALikePublication(long idPublication, String pseudonymeUtilisateur) {
+        Utilisateur utilisateur = utilisateurRepository.findByPseudonyme(pseudonymeUtilisateur);
+        int valeur = utilisateurRepository.utilisateurALikePublication(utilisateur.getId(), idPublication);
+        return valeur == 1;
     }
 
 }

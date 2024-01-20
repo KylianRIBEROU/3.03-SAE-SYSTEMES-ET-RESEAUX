@@ -15,7 +15,7 @@ public class ClientReceptionHandler extends Thread{
         try {
         String serverMessage;
         while ((serverMessage = client.getInput().readLine()) != null) {
-            if (serverMessage.equals("shutdown")) {
+            if (serverMessage.equals("shutdown") || serverMessage.equals("exit") || serverMessage.equals("quit") || serverMessage.equals("quitter")) {
                 break;
             }
             System.out.println(serverMessage);

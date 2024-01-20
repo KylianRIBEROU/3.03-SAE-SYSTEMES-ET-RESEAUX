@@ -1,7 +1,7 @@
 package reseausocial.models.service;
 
 import java.util.List;
-
+import java.util.Set;
 import org.springframework.stereotype.Service;
 
 import reseausocial.models.entity.Publication;
@@ -35,6 +35,12 @@ public interface UtilisateurService {
     public void ajoutePublication(Utilisateur utilisateur, Publication publication);
 
     public void ajoutePublicationLikee(String pseudoUtilisateur, Publication publication);
+
+    public void supprimerPublicationLikee(Utilisateur utilisateur, Publication publication);
     
     public List<Utilisateur> findRandomUtilisateurs(String pseudonyme, int limite);
+
+    public Set<Utilisateur> findUtilisateursAyantLike(long idPublication);
+
+    public boolean utilisateurALikePublication(long idPublication, String pseudonymeUtilisateur);
 }

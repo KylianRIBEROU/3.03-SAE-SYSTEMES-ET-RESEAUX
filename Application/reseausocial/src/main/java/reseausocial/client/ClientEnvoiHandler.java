@@ -16,9 +16,6 @@ public class ClientEnvoiHandler extends Thread {
                 while (true){
                     System.out.print("> ");
                     commande = client.getInputClient().readLine();
-                    if (commande.equals("quit")  || commande.equals("exit") || commande.equals("quitter")) {
-                        break;
-                    }
                     client.getOutput().println(commande); 
                     Thread.sleep(300); // pour éviter flood 
                 }

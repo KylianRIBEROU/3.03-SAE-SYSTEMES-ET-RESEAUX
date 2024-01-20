@@ -4,13 +4,10 @@
 # on verra pour demander un input à l'utilisateur si il n'a rien mis en paramètres d'entrée
 if [ $# -eq 0 ]
   then
-    echo "Vous devez entrer 2 arguments. Le Hostname et votre nom d'utilisateur"
+    echo "Entrez le nom du serveur ou son IP pour vous connecter."
     echo "Nom du serveur"
     read -p "> " arg1
-    echo "Nom d'utilisateur"
-    read -p "> " arg2
-    mvn clean install exec:java@run-client -Dexec.args="$arg1 $arg2" -DskipTests=true
+    mvn clean install exec:java@run-client -Dexec.args="$arg1" -DskipTests=true
   else
-    echo "Arguments supplied"
-    mvn clean install exec:java@run-client -Dexec.args="$1 $2" -DskipTests=true
+    mvn clean install exec:java@run-client -Dexec.args="$1" -DskipTests=true
 fi

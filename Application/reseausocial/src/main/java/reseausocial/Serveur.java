@@ -15,8 +15,6 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 import reseausocial.models.entity.Publication;
 import reseausocial.models.entity.Utilisateur;
 
-// import reseausocial.models.Message;
-// import reseausocial.models.Utilisateur;
 import reseausocial.server.CommandesServeur;
 import reseausocial.server.DatabaseManager;
 import reseausocial.server.ServeurRequeteHandler;
@@ -30,7 +28,6 @@ import java.io.InputStreamReader;
 @SpringBootApplication
 public class Serveur implements CommandesServeur, CommandLineRunner{
 
-    //TODO: avoir une classe avec des méthodes pour gérer les commandes .Comme ca on pourrait partager les commandes entre le client et le serveur
     private List<Utilisateur> utilisateurs;
     private List<Session> sessions;
     private BufferedReader inputServeur;
@@ -43,14 +40,9 @@ public class Serveur implements CommandesServeur, CommandLineRunner{
 
 
         this.utilisateurs = this.databaseManager.getUtilisateurs();
-        //TODO: avoir aussi une liste avec seulement les utilisateurs actuellement connectés
         this.sessions = new ArrayList<>();
         this.inputServeur = new BufferedReader(new InputStreamReader(System.in));
 
-        
-
-       //  System.out.println(databaseManager.getUtilisateurs());
-       //   databaseManager.creerUtilisateur("admin", "admin");
     }
 
     /**
@@ -69,11 +61,6 @@ public class Serveur implements CommandesServeur, CommandLineRunner{
     public void ajouteUtilisateur(Utilisateur utilisateur) {
         this.utilisateurs.add(utilisateur);
     }
-
-    // public static void main(String[] args) {
-    //     Serveur serveur = new Serveur();
-    //     serveur.lancerServeur(5555);
-    // }
 
     public static void main(String[] args) {
         SpringApplication.run(Serveur.class, args);
@@ -122,9 +109,24 @@ public class Serveur implements CommandesServeur, CommandLineRunner{
         return pseudonyme.matches("[a-zA-Z0-9]+") && pseudonyme.length() > 0 && pseudonyme.length() <= 100;
     }
 
-    public void partagerPublication(Utilisateur utilisateur, Publication publication) {
+    public void fermerSessionAvecNomUtilisateur(String nomUtilisateur) {
         for (Session session : this.sessions) {
-            if (utilisateur.getAbonnes().contains(session.getUtilisateur())) { //TODO: fix
+            if (session.getUtilisateur().getPseudonyme().equals(nomUtilisateur)) {
+                try {
+                    session.fermerSession();            
+                }
+                catch (Exception e) {
+                    System.out.println("Erreur lors de la fermeture de la session de l'utilisateur "+nomUtilisateur);
+                }
+            }
+        }
+    }
+
+    public void partagerPublication(String pseudoUtil , Publication publication) {
+        Utilisateur utilisateur = this.databaseManager.findUtilisateurByPseudonyme(pseudoUtil);
+        Set<Utilisateur> abonnes = utilisateur.getAbonnes();
+        for (Session session : this.sessions) {
+            if (abonnes.contains(session.getUtilisateur()) ) { 
                 session.recevoirPublication(publication);
             }
         }
@@ -150,14 +152,27 @@ public class Serveur implements CommandesServeur, CommandLineRunner{
         return this.databaseManager.getPublicationsUtilisateur(utilisateur);
     }
 
+    public Set<Utilisateur> getAbonnesUtilisateur(String pseudoUtilisateur){
+        return this.databaseManager.getAbonnesUtilisateur(pseudoUtilisateur);
+    }
+
+    public Set<Utilisateur> getAbonnementsUtilisateur(String pseudoUtilisateur){
+        return this.databaseManager.getAbonnementsUtilisateur(pseudoUtilisateur);
+    }
     public boolean checkUtilisateurCredentials(String pseudo, String motDePasse){
         return this.databaseManager.checkUtilisateurCredentials(pseudo, motDePasse);
     }
 
-    public Publication creerPublication(String contenu, String pseudoAuteur) {
-        Publication publication = this.databaseManager.creerPublication(contenu, pseudoAuteur);
+    public Publication creerPublication(String pseudoAuteur, String contenu) {
+        Publication publication = this.databaseManager.creerPublication(pseudoAuteur, contenu);
         Utilisateur auteur = this.databaseManager.findUtilisateurByPseudonyme(pseudoAuteur);
-        this.partagerPublication(auteur, publication);
+        this.partagerPublication(auteur.getPseudonyme(), publication);
+        return publication;
+    }
+
+    public Publication creerPublication(Utilisateur auteur, String contenu) {
+        Publication publication = this.databaseManager.creerPublication(auteur, contenu);
+        this.partagerPublication(auteur.getPseudonyme(), publication);
         return publication;
     }
 
@@ -184,15 +199,11 @@ public class Serveur implements CommandesServeur, CommandLineRunner{
         return this.databaseManager.suivreUtilisateur(pseudoUtilisateur, pseudoUtilisateurASuivre);
     }
 
-    public boolean suivreUtilisateur(Utilisateur utilisateur, Utilisateur utilisateurASuivre ){
-        return this.databaseManager.suivreUtilisateur(utilisateur, utilisateurASuivre);
-    }
-
     public List<Utilisateur> getListeSuggestionUtilisateurs(String pseudoUtilisateurAExclure, int limite){
         return this.databaseManager.findRandomUtilisateurs(pseudoUtilisateurAExclure, limite);
     }
 
-    public Publication utilisateurLikePublication(String pseudoUtilisateur, Long idPublication){
+    public boolean utilisateurLikePublication(String pseudoUtilisateur, Long idPublication){
         return this.databaseManager.utilisateurLikePublication(pseudoUtilisateur, idPublication); 
     }
 
@@ -206,29 +217,30 @@ public class Serveur implements CommandesServeur, CommandLineRunner{
         return this.databaseManager.supprimerPublication(idPublication);
     }
 
+    public boolean deletePublication(Long idPublication, String pseudoUtilisateur){
+        return this.databaseManager.supprimerPublication(idPublication, pseudoUtilisateur);
+    }
+
     @Override
     public boolean deleteUtilisateur(String nomUtilisateur) {
       return this.databaseManager.supprimerUtilisateur(nomUtilisateur);
     }
 
     public void afficheUtilisateurs(){
+        List<Utilisateur> utilisateurs = this.databaseManager.getUtilisateurs();
         System.out.println("----------------------------------------------");
         System.out.println("Utilisateurs :");
-        for (Utilisateur utilisateur : this.utilisateurs){
-            utilisateur.affichageUtilisateurSimple();
-        }
+        for (Utilisateur utilisateur : utilisateurs) {
+            utilisateur.affichageUtilisateurSimple();        }
         System.out.println("----------------------------------------------");
-    }
-
-    public void afficheUtilisateursConnectes(){
-        //TODO: afficher les utilisateurs connectés
     }
 
     public void afficheCommandesServeur(){
         System.out.println("----------------------------------------------");
         System.out.println("Commandes serveur ( administrateur ) :");
-        System.out.println("/delete <uuid> : supprime le message correspondant à l'uuid");
-        System.out.println("/remove <nomUtilisateur> : supprime l'utilisateur et ses messages");
+        System.out.println("/show-all-users : affiche tous les utilisateurs");
+        System.out.println("/delete <id_publication> : supprime la publication avec l'id spécifié");
+        System.out.println("/remove <nomUtilisateur> : supprime l'utilisateur et ses publications");
         System.out.println("/help : affiche les commandes serveur");
         System.out.println("----------------------------------------------");
     }

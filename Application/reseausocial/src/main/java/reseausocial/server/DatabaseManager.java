@@ -35,6 +35,7 @@ public class DatabaseManager  {
 
     public boolean supprimerUtilisateur(String pseudonyme) {
         if (utilisateurService.findByPseudonyme(pseudonyme) != null){
+            publicationService.supprimerPublicationsDunUtilisateur(this.utilisateurService.findByPseudonyme(pseudonyme));
             utilisateurService.supprimerUtilisateur(pseudonyme);
             return true;
         }
@@ -53,9 +54,15 @@ public class DatabaseManager  {
         return false;
     }
 
-    public Publication creerPublication(String contenu, String pseudonymeAuteur){
+    public Publication creerPublication(String pseudonymeAuteur, String contenu){
         Publication publi = publicationService.creerPublication(contenu, pseudonymeAuteur);
         utilisateurService.ajoutePublication(pseudonymeAuteur, publi);
+        return publi;
+    }
+
+    public Publication creerPublication(Utilisateur auteur, String contenu){
+        Publication publi = publicationService.creerPublication(contenu, auteur);
+        utilisateurService.ajoutePublication(auteur, publi);
         return publi;
     }
 
@@ -63,16 +70,11 @@ public class DatabaseManager  {
         return utilisateurService.creerUtilisateur(pseudonyme, motDePasse);
     }
 
-    public boolean unfollowUtilisateur(String pseudoUtilisateur, String pseudoUtilisateurSuivi) {
+    public boolean unfollowUtilisateur(String pseudoUtilisateur, String pseudoUtilisateurAUnfollow) {
         Utilisateur utilisateur = utilisateurService.findByPseudonyme(pseudoUtilisateur);
-        Utilisateur utilisateurSuivi = utilisateurService.findByPseudonyme(pseudoUtilisateurSuivi);
-        if (utilisateur != null && utilisateurSuivi != null) {
-            if (utilisateur.getAbonnements().contains(utilisateurSuivi)) {
-                utilisateur.getAbonnements().remove(utilisateurSuivi);
-                return true;
-            }
-        }
-        return false;
+        Utilisateur utilisateurAUnfollow = utilisateurService.findByPseudonyme(pseudoUtilisateurAUnfollow);
+       
+        return utilisateurService.unfollowUtilisateur(utilisateur, utilisateurAUnfollow); // true si unfollow a fonctionné, false sinon
     }
 
     public boolean unfollowUtilisateur(Utilisateur utilisateur, Utilisateur utilisateurSuivi) {
@@ -81,19 +83,11 @@ public class DatabaseManager  {
 
     public boolean suivreUtilisateur(String pseudoUtilisateur, String pseudoUtilisateurASuivre) {
         Utilisateur utilisateur = utilisateurService.findByPseudonyme(pseudoUtilisateur);
-        Utilisateur utilisateurSuivi = utilisateurService.findByPseudonyme(pseudoUtilisateurASuivre);
-        if (utilisateur != null && utilisateurSuivi != null) {
-            if (!utilisateur.getAbonnements().contains(utilisateurSuivi)) {
-                utilisateur.getAbonnements().add(utilisateurSuivi);
-                return true;
-            }
-        }
-        return false;
+        Utilisateur utilisateurASuivre = utilisateurService.findByPseudonyme(pseudoUtilisateurASuivre);
+    
+        return utilisateurService.suivreUtilisateur(utilisateur, utilisateurASuivre); 
     }
 
-    public boolean  suivreUtilisateur(Utilisateur utilisateur, Utilisateur utilisateurSuivi) {
-        return this.utilisateurService.suivreUtilisateur(utilisateur, utilisateurSuivi);
-    }
 
     public Publication findPublicationById(long id) {
         return publicationService.findById(id);
@@ -111,6 +105,36 @@ public class DatabaseManager  {
         return false;
     }
 
+    public Set<Utilisateur> getAbonnesUtilisateur(String pseudoUtilisateur) {
+        Utilisateur utilisateur = utilisateurService.findByPseudonyme(pseudoUtilisateur);
+        if (utilisateur != null) {
+            return utilisateur.getAbonnes();
+        }
+        return null;
+    }
+
+    public Set<Utilisateur> getAbonnementsUtilisateur(String pseudoUtilisateur) {
+        Utilisateur utilisateur = utilisateurService.findByPseudonyme(pseudoUtilisateur);
+        if (utilisateur != null) {
+            return utilisateur.getAbonnements();
+        }
+        return null;
+    }
+
+    public boolean supprimerPublication(long id, String pseudoUtilisateur) {
+        Utilisateur utilisateur = utilisateurService.findByPseudonyme(pseudoUtilisateur);
+        if (utilisateur != null) {
+            Publication publication = publicationService.findById(id);
+            if (publication != null) {
+                if (publication.getAuteur().equals(utilisateur)) {
+                    publicationService.supprimerPublication(id);
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
+
     public void supprimerPublicationsUtilisateur(Utilisateur utilisateur) {
         publicationService.supprimerPublicationsDunUtilisateur(utilisateur);
     }
@@ -119,17 +143,21 @@ public class DatabaseManager  {
         return publicationService.findAll();
     }
 
-    public Publication utilisateurLikePublication(String pseudoUtilisateur, Long idPublication) {
-        Publication publication = publicationService.findById(idPublication);
 
-        if (publication != null) {
-        
-        publicationService.ajouteLikePublication(publication);
-        publicationService.ajouteUtilisateurAyantLike(publication, pseudoUtilisateur);
-        utilisateurService.ajoutePublicationLikee(pseudoUtilisateur, publication);
+    public boolean utilisateurLikePublication(String pseudoUtilisateur, Long idPublication) {
+        if (utilisateurService.utilisateurALikePublication(idPublication, pseudoUtilisateur)){
+            return false;
         }
-        return publication;
+        else {
+            Publication publication = publicationService.findById(idPublication);
+
+            publicationService.ajouteLikePublication(publication);
+            publicationService.ajouteUtilisateurAyantLike(publication, pseudoUtilisateur);
+            utilisateurService.ajoutePublicationLikee(pseudoUtilisateur, publication);
+            return true;
+            }
     }
+
 
     public List<Publication> getPublicationsByUtilisateurPseudo(String pseudoUtilisateur) {
         return publicationService.findByAuteurPseudonyme(pseudoUtilisateur);
