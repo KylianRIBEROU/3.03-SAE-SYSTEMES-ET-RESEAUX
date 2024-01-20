@@ -19,6 +19,8 @@ public interface PublicationService {
 
     public void supprimerPublication(long id);
 
+    public void supprimerPublication(Publication publication);
+
     public void supprimerPublicationsDunUtilisateur(Utilisateur utilisateur);
 
     public Publication findById(long id);

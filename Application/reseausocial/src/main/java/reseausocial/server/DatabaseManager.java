@@ -35,6 +35,7 @@ public class DatabaseManager  {
 
     public boolean supprimerUtilisateur(String pseudonyme) {
         if (utilisateurService.findByPseudonyme(pseudonyme) != null){
+            publicationService.supprimerPublicationsDunUtilisateur(this.utilisateurService.findByPseudonyme(pseudonyme));
             utilisateurService.supprimerUtilisateur(pseudonyme);
             return true;
         }
@@ -69,11 +70,11 @@ public class DatabaseManager  {
         return utilisateurService.creerUtilisateur(pseudonyme, motDePasse);
     }
 
-    public boolean unfollowUtilisateur(String pseudoUtilisateur, String pseudoUtilisateurSuivi) {
+    public boolean unfollowUtilisateur(String pseudoUtilisateur, String pseudoUtilisateurAUnfollow) {
         Utilisateur utilisateur = utilisateurService.findByPseudonyme(pseudoUtilisateur);
-        Utilisateur utilisateurSuivi = utilisateurService.findByPseudonyme(pseudoUtilisateurSuivi);
+        Utilisateur utilisateurAUnfollow = utilisateurService.findByPseudonyme(pseudoUtilisateurAUnfollow);
        
-        return utilisateurService.unfollowUtilisateur(utilisateur, utilisateurSuivi);
+        return utilisateurService.unfollowUtilisateur(utilisateur, utilisateurAUnfollow); // true si unfollow a fonctionné, false sinon
     }
 
     public boolean unfollowUtilisateur(Utilisateur utilisateur, Utilisateur utilisateurSuivi) {
@@ -82,14 +83,11 @@ public class DatabaseManager  {
 
     public boolean suivreUtilisateur(String pseudoUtilisateur, String pseudoUtilisateurASuivre) {
         Utilisateur utilisateur = utilisateurService.findByPseudonyme(pseudoUtilisateur);
-        Utilisateur utilisateurSuivi = utilisateurService.findByPseudonyme(pseudoUtilisateurASuivre);
+        Utilisateur utilisateurASuivre = utilisateurService.findByPseudonyme(pseudoUtilisateurASuivre);
     
-        return utilisateurService.suivreUtilisateur(utilisateur, utilisateurSuivi); 
+        return utilisateurService.suivreUtilisateur(utilisateur, utilisateurASuivre); 
     }
 
-    public boolean suivreUtilisateur(Utilisateur utilisateur, Utilisateur utilisateurSuivi) {
-        return this.utilisateurService.suivreUtilisateur(utilisateur, utilisateurSuivi);
-    }
 
     public Publication findPublicationById(long id) {
         return publicationService.findById(id);

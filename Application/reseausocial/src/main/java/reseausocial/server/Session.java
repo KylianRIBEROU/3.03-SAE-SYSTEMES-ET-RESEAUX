@@ -49,8 +49,9 @@ public class Session implements Runnable {
         try {
             this.utilisateur =  traiterRequeteConnexion();
             if (this.utilisateur == null){
+                output.println("Problème d'authenfication avec le serveur. Déconnexion");
                 fermerSession();
-                return; //TODO : check ca et enelver celui a la fin du while
+                return;
             }
             this.pseudoUtilConnecte = this.utilisateur.getPseudonyme();
             output.println(String.format("Connexion réussie. Bienvenue %s !", this.pseudoUtilConnecte));
@@ -104,6 +105,7 @@ public class Session implements Runnable {
                     case "/show":
                         if (warningContenuManquant(clientMessage, output)) break;
                         String idPublication = clientMessage.split(" ", 2)[1];
+                        if (warningParseLongException(idPublication, output)) break;
                         Long id = Long.parseLong(idPublication);
                         Publication publication = this.serveur.getPublicationById(id);
                         if (publication == null) {
@@ -116,7 +118,8 @@ public class Session implements Runnable {
                     case "/like":
                         if (warningContenuManquant(clientMessage, output)) break;
                         String idPubli= clientMessage.split(" ", 2)[1];
-                        Long idPubliLong = Long.parseLong(idPubli);  //TODO: check idPubli est nombre avant, pour éviter que ParseLong lève une exception
+                        if (warningParseLongException(idPubli, output)) break;
+                        Long idPubliLong = Long.parseLong(idPubli); 
                         Publication publiLike = this.serveur.getPublicationById(idPubliLong);
                         if (publiLike == null) {
                             output.println("Aucun message avec l'id '" + idPubli + "' n'existe sur le serveur");
@@ -133,6 +136,7 @@ public class Session implements Runnable {
                     case "/delete":
                         if (warningContenuManquant(clientMessage, output)) break;
                         String idMessageADelete = clientMessage.split(" ", 2)[1];
+                        if (warningParseLongException(idMessageADelete, output)) break;
                         Long idPubliADeleteLong = Long.parseLong(idMessageADelete);
                         if (this.serveur.deletePublication(idPubliADeleteLong, this.pseudoUtilConnecte)) {
                             output.println("Message supprimé avec succès ! ( id : " + idMessageADelete + " )");
@@ -167,11 +171,16 @@ public class Session implements Runnable {
                     case "/unfollow":
                         if (warningContenuManquant(clientMessage, output)) break;
                         String nomUtilisateurAUnfollow = clientMessage.split(" ", 2)[1];
+                        if (nomUtilisateurAUnfollow.equals(this.pseudoUtilConnecte)){
+                            output.println("Vous ne pouvez pas vous unfollow vous même");
+                            break;
+                        }
                         Utilisateur utilisateurUnfollow = this.serveur.getUtilisateurByPseudo(nomUtilisateurAUnfollow);
                         if (utilisateurUnfollow == null) {
                             output.println("L'utilisateur à unfollow '" + nomUtilisateurAUnfollow + "' n'existe pas");//TODo: changer comme pour le follow
                         } else {
-                           if (this.serveur.unfollowUtilisateur(this.utilisateur, utilisateurUnfollow)){ //TODO: fix
+                            boolean unfollow = this.serveur.unfollowUtilisateur(this.pseudoUtilConnecte, utilisateurUnfollow.getPseudonyme());
+                           if (unfollow){
                                 output.println("Vous ne suivez plus " + nomUtilisateurAUnfollow);
                            }
                             else{
@@ -205,17 +214,23 @@ public class Session implements Runnable {
                         }
                         output.println("-------------------------------------");
                         break;
+                        
                     case "/help":
                         afficherMenuAideClient(output);
                         break;
 
                     default:
-                        Thread.sleep(100); // au cas ou on sait jamais
-                        output.println("Pas de requête valide spécifiée");
+                    if ( Constantes.COMMANDES_FIN_SESSION.contains(clientMessage) ){
+                        output.println("shutdown");
+                        fermerSession();
+                        break;
+                    }
+                    Thread.sleep(100);
+                    output.println("Pas de requête valide spécifiée");
                 }
                 if (this.utilisateur == null){
                     output.println("Utilisateur supprimé par un administrateur. Déconnexion");
-                    output.println("shutdown"); //TODO: changer comportement pour forcer déconnexion
+                    output.println("shutdown");
                     break;
                 }
             }
@@ -320,9 +335,9 @@ public class Session implements Runnable {
                     while (!mdpValides){
                         output.println("Veuillez choisir un mot de passe :");
                                         
-                    // TODO: trouver truc pour que la saisie du mdp seulement soit
-                    // cachée dans le terminal 
-                    //output.println("hideinput"); et le client réagirait a cet output
+                        // TODO: trouver truc pour que la saisie du mdp seulement soit
+                        // cachée dans le terminal 
+                        //output.println("hideinput"); et le client réagirait a cet output
                         nouveauMotDePasse = input.readLine();
 
                         if (nouveauMotDePasse.length() >= 100 || nouveauMotDePasse.length() < 1){
@@ -344,7 +359,7 @@ public class Session implements Runnable {
                     return this.serveur.creerUtilisateur(nouveauPseudo, nouveauMotDePasse);
                 case "3":
                     output.println("shutdown");
-                    fermerSession(); //TODO: VERIFIER QUE TOUT EST BIEN FERME
+                    fermerSession();
                     break;
                 default:
                     output.println("Veuillez choisir une option valide (1, 2 ou 3)");
@@ -385,6 +400,40 @@ public class Session implements Runnable {
         }   
         return false;
     }
+
+    /**
+     * Méthode qui affiche un warning si le contenu de la requete est innaproprié
+     * @param contenuRequete
+     * @param output
+     * @return
+     */
+    public static boolean warningParseLongException(String contenuRequete, PrintWriter output){
+        try{
+            Long.parseLong(contenuRequete);
+        }
+        catch (NumberFormatException e){
+            output.println("L'argument de la commande doit être un nombre");
+            return true;
+        }
+        return false;
+    }
+
+    /**
+     * Méthode qui affiche un warning si le contenu de la requete est innaproprié
+     * @param contenuRequete
+     * @return
+     */
+    public static boolean warningParseLongException(String contenuRequete){
+        try{
+            Long.parseLong(contenuRequete);
+        }
+        catch (NumberFormatException e){
+            System.out.println("L'argument de la commande doit être un nombre");
+            return true;
+        }
+        return false;
+    }
+
 
     /**
      * Méthode qui affiche un warning si le contenu de la requete est manquant

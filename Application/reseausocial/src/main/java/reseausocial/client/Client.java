@@ -69,10 +69,6 @@ public class Client {
             envoiMsgServHandler.start(); // envoi message serveur threadis
             
 
-//             //TODO:  apres s'etre connecté ou créé compte Il voit ensuite la liste des différents messages postés par les utilisateurs
-// auxquels il est abonné, dans l’ordre chronologique (une limite du nombre de messages affichés
-// devra être implantée).
-
             receptionMsgServHandler.join(); // dans la logique à implémenter, si serveur down, on ferme le client
             // envoiMsgServHandler.join();
             fermetureClient();

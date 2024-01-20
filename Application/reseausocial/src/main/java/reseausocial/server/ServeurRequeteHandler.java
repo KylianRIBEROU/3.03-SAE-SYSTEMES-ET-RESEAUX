@@ -23,12 +23,10 @@ public class ServeurRequeteHandler extends Thread {
                     switch (requete.split(" ", 2)[0]) {
                         case "/delete":
                             if (Session.warningContenuManquant(requete)) break;
-                            System.out.println(requete);
-                            System.out.println(requete.split(" ", 2)[0]);
-                            System.out.println(requete.split(" ", 2)[1]);
+        
                             String idPublication = requete.split(" ", 2)[1];
+                            if (Session.warningParseLongException(requete)) break;
                             Long idPublicationLong = Long.parseLong(idPublication);
-                            //TODO: gérer les exceptions de ParseLong partout ( meme dans Session.java )
                             if (this.serveur.deletePublication(idPublicationLong)){
                                 System.out.println("Publication supprimée avec succès.");
                             } else {
@@ -38,7 +36,7 @@ public class ServeurRequeteHandler extends Thread {
                         case "/remove":
                             if (Session.warningContenuManquant(requete)) break;
                             String nomUtilisateur = requete.split(" ", 2)[1];
-                            this.serveur.deleteUtilisateur(nomUtilisateur);
+                            this.serveur.deleteUtilisateur(nomUtilisateur); //TODO: terminer session des utilisateurs actuellement connectés qui viennent d'être supprimés
                             break;
                         case "/show-all-users":
                             this.serveur.afficheUtilisateurs();

@@ -92,34 +92,40 @@ public class UtilisateurServiceImpl implements UtilisateurService{
 
     @Override
     public boolean suivreUtilisateur(Utilisateur utilisateur, Utilisateur utilisateurSuivi) {
-        System.out.println(utilisateur.getId() + " " + utilisateurSuivi.getId());
-        System.out.println(this.utilisateurRepository.utilisateurSuitUtilisateur(utilisateur.getId(), utilisateurSuivi.getId()));
-
-        System.out.println(this.utilisateurRepository.utilisateurSuitUtilisateur(utilisateurSuivi.getId(), utilisateur.getId()));
-
-        if (this.utilisateurRepository.utilisateurSuitUtilisateur(utilisateurSuivi.getId(), utilisateur.getId()) == 1) {
-            System.out.println("TU LE SUIS DEJA FRERE");
+     
+        if (utilisateur.getAbonnements().contains(utilisateurSuivi)) {
             return false;
         }
+     
         utilisateur.getAbonnements().add(utilisateurSuivi);
-        utilisateurSuivi.getAbonnes().add(utilisateur); // a vérifier, l'ajout des deux cotés est il nécessaire ?
         utilisateurRepository.save(utilisateur);
+      
+        utilisateurSuivi.getAbonnes().add(utilisateur);
         utilisateurRepository.save(utilisateurSuivi);
         return true;
    
     }
 
     @Override
-    public boolean unfollowUtilisateur(Utilisateur utilisateur, Utilisateur utilisateurSuivi) {
-        if (this.utilisateurRepository.utilisateurSuitUtilisateur(utilisateur.getId(), utilisateurSuivi.getId()) == 0) {
-            return false;
+    public boolean unfollowUtilisateur(Utilisateur utilisateur, Utilisateur utilisateurAUnfollow) {
+      
+  
+
+        if (utilisateur.getAbonnements().contains(utilisateurAUnfollow)) {
+    
+            utilisateur.getAbonnements().remove(utilisateurAUnfollow);
+            utilisateurAUnfollow.getAbonnes().remove(utilisateur); // a vérifier, l'ajout des deux cotés est il nécessaire ?
+            utilisateurRepository.save(utilisateur);
+            utilisateurRepository.save(utilisateurAUnfollow);
+            return true;
         }
-        utilisateur.getAbonnements().remove(utilisateurSuivi);
-        utilisateurSuivi.getAbonnes().remove(utilisateur); // a vérifier, l'ajout des deux cotés est il nécessaire ?
-        utilisateurRepository.save(utilisateur);
-        utilisateurRepository.save(utilisateurSuivi);
-        return true;
+        return false;
     }
+
+    public boolean utilisateurSuitUtilisateur(Utilisateur utilisateur, Utilisateur utilisateurSuivi) {
+        return utilisateur.getAbonnements().contains(utilisateurSuivi);
+    }
+
 
     @Override
     public List<Utilisateur> findRandomUtilisateurs(String pseudonyme, int limite) {

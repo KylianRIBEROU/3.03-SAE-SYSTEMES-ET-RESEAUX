@@ -15,8 +15,6 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 import reseausocial.models.entity.Publication;
 import reseausocial.models.entity.Utilisateur;
 
-// import reseausocial.models.Message;
-// import reseausocial.models.Utilisateur;
 import reseausocial.server.CommandesServeur;
 import reseausocial.server.DatabaseManager;
 import reseausocial.server.ServeurRequeteHandler;
@@ -30,7 +28,6 @@ import java.io.InputStreamReader;
 @SpringBootApplication
 public class Serveur implements CommandesServeur, CommandLineRunner{
 
-    //TODO: avoir une classe avec des méthodes pour gérer les commandes .Comme ca on pourrait partager les commandes entre le client et le serveur
     private List<Utilisateur> utilisateurs;
     private List<Session> sessions;
     private BufferedReader inputServeur;
@@ -43,14 +40,9 @@ public class Serveur implements CommandesServeur, CommandLineRunner{
 
 
         this.utilisateurs = this.databaseManager.getUtilisateurs();
-        //TODO: avoir aussi une liste avec seulement les utilisateurs actuellement connectés
         this.sessions = new ArrayList<>();
         this.inputServeur = new BufferedReader(new InputStreamReader(System.in));
 
-        
-
-       //  System.out.println(databaseManager.getUtilisateurs());
-       //   databaseManager.creerUtilisateur("admin", "admin");
     }
 
     /**
@@ -69,11 +61,6 @@ public class Serveur implements CommandesServeur, CommandLineRunner{
     public void ajouteUtilisateur(Utilisateur utilisateur) {
         this.utilisateurs.add(utilisateur);
     }
-
-    // public static void main(String[] args) {
-    //     Serveur serveur = new Serveur();
-    //     serveur.lancerServeur(5555);
-    // }
 
     public static void main(String[] args) {
         SpringApplication.run(Serveur.class, args);
@@ -124,9 +111,9 @@ public class Serveur implements CommandesServeur, CommandLineRunner{
 
     public void partagerPublication(String pseudoUtil , Publication publication) {
         Utilisateur utilisateur = this.databaseManager.findUtilisateurByPseudonyme(pseudoUtil);
-        Set<Utilisateur> abonnes = utilisateur.getAbonnements();
+        Set<Utilisateur> abonnes = utilisateur.getAbonnes();
         for (Session session : this.sessions) {
-            if (abonnes.contains(session.getUtilisateur()) ) { //TODO: fix
+            if (abonnes.contains(session.getUtilisateur()) ) { 
                 session.recevoirPublication(publication);
             }
         }
@@ -199,10 +186,6 @@ public class Serveur implements CommandesServeur, CommandLineRunner{
         return this.databaseManager.suivreUtilisateur(pseudoUtilisateur, pseudoUtilisateurASuivre);
     }
 
-    public boolean suivreUtilisateur(Utilisateur utilisateur, Utilisateur utilisateurASuivre ){
-        return this.databaseManager.suivreUtilisateur(utilisateur, utilisateurASuivre);
-    }
-
     public List<Utilisateur> getListeSuggestionUtilisateurs(String pseudoUtilisateurAExclure, int limite){
         return this.databaseManager.findRandomUtilisateurs(pseudoUtilisateurAExclure, limite);
     }
@@ -237,10 +220,6 @@ public class Serveur implements CommandesServeur, CommandLineRunner{
         for (Utilisateur utilisateur : utilisateurs) {
             utilisateur.affichageUtilisateurSimple();        }
         System.out.println("----------------------------------------------");
-    }
-
-    public void afficheUtilisateursConnectes(){
-        //TODO: afficher les utilisateurs connectés
     }
 
     public void afficheCommandesServeur(){

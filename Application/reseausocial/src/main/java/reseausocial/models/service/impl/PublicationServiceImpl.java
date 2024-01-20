@@ -76,14 +76,23 @@ public class PublicationServiceImpl implements PublicationService {
     @Transactional
     public void supprimerPublication(long id) {
         Publication publication = publicationRepository.findById(id);
-        utilisateurService.supprimerPublicationLikee(publication.getAuteur(), publication);
+        publication.getUtilisateursQuiOntLike().forEach(utilisateur -> utilisateurService.supprimerPublicationLikee(utilisateur, publication));
         publicationRepository.deleteById(id);
     }
 
     @Override
     @Transactional
+    public void supprimerPublication(Publication publication) {
+        publication.getUtilisateursQuiOntLike().forEach(utilisateur -> utilisateurService.supprimerPublicationLikee(utilisateur, publication));
+        publicationRepository.delete(publication);
+    }
+
+    @Override
+    @Transactional
     public void supprimerPublicationsDunUtilisateur(Utilisateur utilisateur) {
-        publicationRepository.deleteByAuteurId(utilisateur.getId());
+        for (Publication publication : utilisateur.getPublications()) {
+            this.supprimerPublication(publication);
+        }
     }
 
     @Override
