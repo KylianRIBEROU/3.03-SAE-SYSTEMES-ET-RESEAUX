@@ -43,4 +43,6 @@ public interface UtilisateurService {
     public Set<Utilisateur> findUtilisateursAyantLike(long idPublication);
 
     public boolean utilisateurALikePublication(long idPublication, String pseudonymeUtilisateur);
+
+    public void supprimerSuivreRelations(Utilisateur utilisateur);
 }

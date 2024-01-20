@@ -144,4 +144,9 @@ public class UtilisateurServiceImpl implements UtilisateurService{
         return valeur == 1;
     }
 
+    @Override
+    public void supprimerSuivreRelations(Utilisateur utilisateur) {
+        this.utilisateurRepository.supprimerSuivreRelations(utilisateur.getId());
+    }
+
 }

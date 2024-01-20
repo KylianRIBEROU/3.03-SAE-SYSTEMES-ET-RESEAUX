@@ -1,5 +1,9 @@
 # SAE 3.03 - Système et Réseau
 
+lien du projet Git : https://github.com/KylianRIBEROU/3.03-SAE-SYSTEMES-ET-RESEAUX
+
+Vidéo de présentation de l'application disponible a la racine du projet.
+
 ## Rappel des attendus du projet
 
 Le but de cette SAÉ est de développer une application client-serveur d’un réseau social : les utilisateurs peuvent publier des messages, et suivre d’autres utilisateurs pour consulter leurs publications.

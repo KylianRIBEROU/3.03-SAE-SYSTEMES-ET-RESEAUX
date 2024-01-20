@@ -35,4 +35,9 @@ public interface UtilisateurRepository extends JpaRepository<Utilisateur, Long> 
     +" ORDER BY RAND() LIMIT ?2", nativeQuery = true)
     public List<Utilisateur> findRandomUtilisateurs(String pseudonyme, int limite);
 
+
+    // supprimer toutes les relations de suivi d'un utilisateur
+    @Query(value = "DELETE FROM suivre WHERE utilisateur_id = ?1 OR abonne_id = ?1", nativeQuery = true)
+    public void supprimerSuivreRelations(long idUtilisateur);
+
 }

@@ -157,7 +157,6 @@ public class Session implements Runnable {
                             output.println("L'utilisateur " + nomUtilisateur + " n'existe pas");
                         } else {
                             boolean suivre = this.serveur.suivreUtilisateur(this.pseudoUtilConnecte, utilisateurASuivre.getPseudonyme());
-                            System.out.println(suivre);
                             if (!suivre){
                                 output.println("Vous suivez déjà " + nomUtilisateur);
                                 break;
