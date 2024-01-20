@@ -13,3 +13,7 @@
 # virtual machine crash logs, see http://www.java.com/en/download/help/error_hotspot.xml
 hs_err_pid*
 replay_pid*
+
+# fichiers relatifs aux tests maven
+Application/reseausocial/target/surefire-reports/reseausocial.AppTest.txt
+Application/reseausocial/target/surefire-reports/TEST-reseausocial.AppTest.xml
