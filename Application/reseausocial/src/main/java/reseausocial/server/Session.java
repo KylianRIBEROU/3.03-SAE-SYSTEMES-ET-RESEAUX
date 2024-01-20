@@ -62,6 +62,7 @@ public class Session implements Runnable {
             while ((clientMessage = input.readLine()) != null) {
                 // clientMessage.split(" ", 2) // va split seulement sur le premier espace"
                 // [0] pour 1ere partie, [1 pour le reste]
+
                 switch (clientMessage.split(" ", 2)[0]) {
                     case "/post":
                         if (warningContenuManquant(clientMessage, output)) break;
@@ -246,7 +247,7 @@ public class Session implements Runnable {
             }
         }
         catch (IOException e) {
-            System.out.println("Flux de donnée d'un utilisateur en cours de connexion interrompu");
+            System.out.println("Session d'un utilisateur interrompue.");
         }
         catch (InterruptedException e) {
             e.printStackTrace();

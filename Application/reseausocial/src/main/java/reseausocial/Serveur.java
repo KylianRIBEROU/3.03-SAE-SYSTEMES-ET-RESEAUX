@@ -109,6 +109,19 @@ public class Serveur implements CommandesServeur, CommandLineRunner{
         return pseudonyme.matches("[a-zA-Z0-9]+") && pseudonyme.length() > 0 && pseudonyme.length() <= 100;
     }
 
+    public void fermerSessionAvecNomUtilisateur(String nomUtilisateur) {
+        for (Session session : this.sessions) {
+            if (session.getUtilisateur().getPseudonyme().equals(nomUtilisateur)) {
+                try {
+                    session.fermerSession();            
+                }
+                catch (Exception e) {
+                    System.out.println("Erreur lors de la fermeture de la session de l'utilisateur "+nomUtilisateur);
+                }
+            }
+        }
+    }
+
     public void partagerPublication(String pseudoUtil , Publication publication) {
         Utilisateur utilisateur = this.databaseManager.findUtilisateurByPseudonyme(pseudoUtil);
         Set<Utilisateur> abonnes = utilisateur.getAbonnes();

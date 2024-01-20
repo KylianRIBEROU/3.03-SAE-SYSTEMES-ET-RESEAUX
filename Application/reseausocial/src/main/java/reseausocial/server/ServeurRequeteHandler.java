@@ -36,7 +36,12 @@ public class ServeurRequeteHandler extends Thread {
                         case "/remove":
                             if (Session.warningContenuManquant(requete)) break;
                             String nomUtilisateur = requete.split(" ", 2)[1];
-                            this.serveur.deleteUtilisateur(nomUtilisateur); //TODO: terminer session des utilisateurs actuellement connectés qui viennent d'être supprimés
+                            if (this.serveur.deleteUtilisateur(nomUtilisateur)) {
+                                this.serveur.fermerSessionAvecNomUtilisateur(nomUtilisateur);
+                                System.out.println("Utilisateur supprimé avec succès.");
+                            } else {
+                                System.out.println("Aucun utilisateur n'existe avec ce nom");
+                            }; //TODO: terminer session des utilisateurs actuellement connectés qui viennent d'être supprimés
                             break;
                         case "/show-all-users":
                             this.serveur.afficheUtilisateurs();
